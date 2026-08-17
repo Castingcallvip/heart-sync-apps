@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Twin Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0F; --surface:#15161E; --surface-2:#1B1D28; --line:#262838; --line-soft:#1E2029;
+  --violet:#8B5CF6; --violet-soft:rgba(139,92,246,.14);
+  --cyan:#22D3EE; --cyan-soft:rgba(34,211,238,.12);
+  --gold:#E8B93F; --gold-soft:rgba(232,185,63,.14);
+  --green:#4ADE80; --green-soft:rgba(74,222,128,.14);
+  --danger:#F0716B; --danger-soft:rgba(240,113,107,.13);
+  --text:#ECEDF4; --text-dim:#9A9DB0; --text-faint:#63667A;
+  --radius:14px; --font-d:'Space Grotesk',sans-serif; --font-b:'Inter',sans-serif; --font-m:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);-webkit-font-smoothing:antialiased;}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(1100px 600px at 90% -10%, rgba(139,92,246,.13), transparent 60%),
+             radial-gradient(900px 500px at -10% 110%, rgba(34,211,238,.09), transparent 60%);}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,textarea,select{font-family:inherit;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+
+.shell{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:26px 30px 80px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:22px;}
+.brand{font-family:var(--font-m);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);}
+.brand b{color:var(--text-dim);}
+.twin-chip{display:flex;align-items:center;gap:8px;padding:7px 13px;border:1px solid var(--line);border-radius:100px;font-size:12px;color:var(--text-dim);font-family:var(--font-m);}
+.twin-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 6px var(--cyan);}
+
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line-soft);margin-bottom:26px;}
+.tab-btn{padding:12px 18px;font-size:13.5px;font-weight:600;color:var(--text-faint);border-bottom:2px solid transparent;transition:all .2s;}
+.tab-btn:hover{color:var(--text-dim);}
+.tab-btn.active{color:var(--text);border-color:var(--violet);}
+.panel{display:none;animation:rise .4s cubic-bezier(.2,.7,.3,1);}
+.panel.active{display:block;}
+@keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+h1{font-family:var(--font-d);font-weight:700;font-size:26px;margin-bottom:6px;}
+.sub{color:var(--text-dim);font-size:13.5px;margin-bottom:22px;max-width:640px;line-height:1.55;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);}
+
+/* ---------- CALENDAR ---------- */
+.week-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.week-btn{padding:8px 16px;border-radius:9px;border:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--text-dim);font-family:var(--font-m);}
+.week-btn.active{background:var(--violet-soft);border-color:var(--violet);color:var(--text);}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+.legend span{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-faint);font-family:var(--font-m);}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block;}
+.day-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+.day-card{padding:18px 20px;display:flex;flex-direction:column;gap:11px;}
+.day-card.promo{border-color:var(--gold);box-shadow:0 0 0 1px rgba(232,185,63,.25);}
+.day-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+.day-date{font-family:var(--font-m);font-size:11px;color:var(--text-faint);}
+.day-name{font-family:var(--font-m);font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;}
+.day-category{font-family:var(--font-d);font-size:16px;font-weight:700;color:var(--text);margin-top:2px;}
+.platform-badges{display:flex;gap:6px;flex-wrap:wrap;}
+.platform-badge{font-size:10px;font-family:var(--font-m);padding:3px 8px;border-radius:100px;font-weight:600;letter-spacing:.02em;white-space:nowrap;}
+.pf-instagram{background:rgba(232,113,199,.15);color:#E871C7;}
+.pf-tiktok{background:rgba(34,211,238,.15);color:var(--cyan);}
+.pf-twitter{background:rgba(139,164,255,.15);color:#8BA4FF;}
+.pf-youtube{background:rgba(240,113,107,.15);color:var(--danger);}
+.pf-any{background:var(--surface-2);color:var(--text-dim);}
+.day-idea{font-size:13.5px;font-weight:600;line-height:1.5;}
+.day-idea b{color:var(--cyan);font-family:var(--font-m);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;font-weight:600;}
+.day-format{font-size:12.5px;color:var(--text-dim);}
+.day-format b{color:var(--text-faint);font-weight:600;}
+.hashtags{font-family:var(--font-m);font-size:11px;color:var(--violet);line-height:1.6;word-break:break-word;}
+.poll-badge{display:flex;align-items:flex-start;gap:8px;background:var(--gold-soft);border:1px solid rgba(232,185,63,.35);
+  border-radius:9px;padding:9px 12px;font-size:12px;color:var(--text-dim);}
+.poll-badge .tagline{font-family:var(--font-m);font-size:9.5px;color:var(--gold);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:3px;}
+.copy-idea-btn{display:flex;align-items:center;gap:6px;font-family:var(--font-m);font-size:10.5px;color:var(--text-dim);
+  border:1px solid var(--line);padding:6px 10px;border-radius:8px;align-self:flex-start;transition:all .15s;}
+.copy-idea-btn:hover{color:var(--text);border-color:var(--violet);background:var(--violet-soft);}
+.copy-idea-btn.copied{color:var(--green);border-color:var(--green);}
+.day-meta{display:flex;gap:6px;flex-wrap:wrap;}
+.tag{font-size:9.5px;font-family:var(--font-m);color:var(--text-faint);border:1px solid var(--line);padding:2px 7px;border-radius:100px;}
+.tag.theme{color:var(--violet);border-color:rgba(139,92,246,.35);}
+.promo-flag{font-size:9.5px;font-family:var(--font-m);color:var(--gold);border:1px solid rgba(232,185,63,.4);padding:2px 7px;border-radius:100px;}
+
+/* ---------- ANALYTICS ---------- */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+@media (max-width:860px){.kpi-row{grid-template-columns:repeat(2,1fr);}}
+.kpi-card{padding:18px;}
+.kpi-label{font-family:var(--font-m);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin-bottom:10px;}
+.kpi-val{font-family:var(--font-d);font-size:26px;font-weight:700;margin-bottom:6px;}
+.kpi-delta{font-size:11.5px;font-family:var(--font-m);display:flex;align-items:center;gap:4px;}
+.kpi-delta.up{color:var(--green);} .kpi-delta.down{color:var(--danger);}
+.viz-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media (max-width:860px){.viz-row{grid-template-columns:1fr;}}
+.viz-card{padding:20px;}
+.viz-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.viz-head h4{font-family:var(--font-m);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);}
+.viz-note{font-size:10.5px;color:var(--text-faint);}
+.sent-row{display:flex;align-items:center;gap:22px;}
+.sent-legend{display:flex;flex-direction:column;gap:10px;font-size:12.5px;}
+.sent-legend div{display:flex;align-items:center;gap:8px;}
+.sent-legend i{width:10px;height:10px;border-radius:3px;}
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.bar-label{width:80px;font-size:11.5px;color:var(--text-dim);font-family:var(--font-m);flex-shrink:0;}
+.bar-track{flex:1;height:9px;background:var(--surface-2);border-radius:6px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:6px;}
+.bar-val{width:56px;text-align:right;font-family:var(--font-m);font-size:11.5px;color:var(--text-dim);}
+
+/* ---------- COLLAB ---------- */
+.collab-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+@media (max-width:1080px){.kanban{grid-template-columns:repeat(3,1fr);}}
+@media (max-width:700px){.kanban{grid-template-columns:1fr;}}
+.kcol{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px;min-height:120px;}
+.kcol-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 2px;}
+.kcol-head h5{font-family:var(--font-m);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-faint);}
+.kcol-count{font-family:var(--font-m);font-size:10px;color:var(--text-faint);background:var(--surface-2);padding:2px 7px;border-radius:100px;}
+.pcard{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:10px;padding:12px;margin-bottom:10px;transition:all .2s;}
+.pcard:hover{border-color:var(--violet);transform:translateY(-2px);}
+.pcard h6{font-family:var(--font-d);font-size:13.5px;margin-bottom:6px;}
+.pcard .meta{font-size:10.5px;color:var(--text-faint);font-family:var(--font-m);margin-bottom:8px;}
+.pcard .val{font-size:11.5px;color:var(--gold);font-family:var(--font-m);}
+
+.overlay{position:fixed;inset:0;background:rgba(6,6,10,.6);backdrop-filter:blur(3px);z-index:40;display:none;align-items:flex-start;justify-content:flex-end;}
+.overlay.show{display:flex;}
+.drawer{width:min(460px,94vw);height:100vh;background:var(--bg);border-left:1px solid var(--line);overflow-y:auto;padding:26px 24px 60px;}
+.drawer-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.drawer-head h3{font-family:var(--font-d);font-size:20px;}
+.close-btn{font-size:20px;color:var(--text-faint);line-height:1;}
+.close-btn:hover{color:var(--text);}
+.drawer-sub{font-size:12px;color:var(--text-faint);font-family:var(--font-m);margin-bottom:22px;}
+.drawer-section{margin-bottom:24px;}
+.drawer-section h4{font-family:var(--font-m);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--cyan);margin-bottom:12px;}
+.brief-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px;}
+.brief-row .k{color:var(--text-faint);}
+.mini-kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.mini-kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;}
+.mini-kpi .l{font-size:10px;font-family:var(--font-m);color:var(--text-faint);margin-bottom:4px;}
+.mini-kpi .v{font-family:var(--font-d);font-size:17px;font-weight:700;}
+.log-item{padding:10px 0;border-bottom:1px solid var(--line-soft);}
+.log-item .ts{font-size:10px;font-family:var(--font-m);color:var(--text-faint);margin-bottom:4px;}
+.log-item .body{font-size:12.5px;color:var(--text-dim);line-height:1.5;}
+.log-input{display:flex;gap:8px;margin-top:12px;}
+.log-input input{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 11px;color:var(--text);font-size:12.5px;}
+.mini-btn{font-family:var(--font-m);font-size:11px;padding:8px 13px;border-radius:8px;border:1px solid var(--line);color:var(--text-dim);}
+.mini-btn:hover{color:var(--text);border-color:var(--text-dim);}
+.mini-btn.primary{background:var(--violet);border-color:var(--violet);color:#fff;}
+
+.placeholder{color:var(--gold);font-family:var(--font-m);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface-2);
+  border:1px solid var(--line);padding:11px 18px;border-radius:10px;font-size:12.5px;font-family:var(--font-m);
+  opacity:0;pointer-events:none;transition:all .3s;z-index:60;display:flex;align-items:center;gap:8px;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 6px var(--cyan);}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="topbar">
+    <div class="brand">Heart Sync AI Creative Agency <b>/ AI Twin Command Center</b></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="home.html" class="twin-chip" style="text-decoration:none;color:var(--text-dim);">🏠 Home</a>
+      <div class="twin-chip"><span class="dot"></span><span class="placeholder">[AI TWIN NAME]</span> — active persona</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="calendar" onclick="showTab('calendar')">Content Calendar</button>
+    <button class="tab-btn" data-tab="analytics" onclick="showTab('analytics')">Analytics Dashboard</button>
+    <button class="tab-btn" data-tab="collab" onclick="showTab('collab')">Brand Collaborations</button>
+  </div>
+
+  <!-- ============ CONTENT CALENDAR ============ -->
+  <section class="panel active" id="panel-calendar">
+    <h1>AI Twin Creation Calendar</h1>
+    <p class="sub">Pure creation-focused — no talking-to-camera, no Q&A. Every post shows the process: prompts, results, variations, tools. Same 7-day rhythm repeats and rotates for 13 weeks.</p>
+    <button class="copy-idea-btn" style="margin-bottom:18px;" onclick="copyFullPlan(this)">⧉ Copy full 90-day plan</button>
+
+    <div class="week-tabs" id="weekTabs"></div>
+    <div class="legend">
+      <span><i style="background:#E871C7"></i>Instagram</span>
+      <span><i style="background:var(--cyan)"></i>TikTok</span>
+      <span><i style="background:#8BA4FF"></i>Twitter/X</span>
+      <span><i style="background:var(--danger)"></i>YouTube Shorts</span>
+      <span><i style="background:var(--gold)"></i>Bonus poll/vote</span>
+    </div>
+    <div class="day-grid" id="dayGrid"></div>
+  </section>
+
+  <!-- ============ ANALYTICS ============ -->
+  <section class="panel" id="panel-analytics">
+    <h1>Performance Analytics</h1>
+    <p class="sub">Sample data illustrating the layout — swap in live numbers from your social APIs / listening tool once connected.</p>
+
+    <div class="kpi-row" id="kpiRow"></div>
+
+    <div class="viz-row">
+      <div class="card viz-card">
+        <div class="viz-head"><h4>Engagement rate — 30 day trend</h4><span class="viz-note">Line chart</span></div>
+        <svg viewBox="0 0 400 140" style="width:100%;height:150px;" id="trendSvg"></svg>
+      </div>
+      <div class="card viz-card">
+        <div class="viz-head"><h4>Comment sentiment</h4><span class="viz-note">Donut chart</span></div>
+        <div class="sent-row">
+          <svg viewBox="0 0 120 120" width="120" height="120" id="donutSvg"></svg>
+          <div class="sent-legend">
+            <div><i style="background:var(--green)"></i>Positive — 68%</div>
+            <div><i style="background:var(--text-faint)"></i>Neutral — 24%</div>
+            <div><i style="background:var(--danger)"></i>Negative — 8%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card viz-card">
+      <div class="viz-head"><h4>Reach by platform</h4><span class="viz-note">Bar chart</span></div>
+      <div id="barChart"></div>
+    </div>
+  </section>
+
+  <!-- ============ BRAND COLLABORATIONS ============ -->
+  <section class="panel" id="panel-collab">
+    <h1>Brand Collaboration Pipeline</h1>
+    <p class="sub">Track partners from first outreach to wrap report. Click any card for the full brief, performance report, and communication log.</p>
+
+    <div class="kanban" id="kanban"></div>
+  </section>
+
+</div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this) closeDrawer()">
+  <div class="drawer" id="drawer"></div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script>
+/* ===================== CONTENT CALENDAR ===================== */
+const PF_LABEL = {instagram:"Instagram",tiktok:"TikTok",twitter:"Twitter/X",youtube:"YT Shorts",any:"Any platform"};
+
+// Rotating variety for the days whose example changes week to week
+const STYLE_VARIETY = ["Cyberpunk twin","Soft aesthetic twin","Hyper-realistic twin","Anime twin","Vintage film twin","Glitchcore twin","Pastel dreamcore twin","Noir twin","Fantasy elf twin","Streetwear twin","Watercolor twin","Holographic twin","Minimalist twin"];
+const PROMPT_TECHNIQUE = ["Prompt weighting","Negative prompts","Style references","LoRA blending","ControlNet pose lock","IP-Adapter reference","Seed locking","Hybrid style mixing","Aspect ratio experiments","Img2img strength tests","Multi-reference blending","Upscale refinement","Inpainting touch-ups"];
+const REMIX_TYPE = ["new outfit","new era","new art style","new lighting","new expression","new pose","new color palette","new background","new season","new culture-inspired look","new material","new decade aesthetic","new mood"];
+const TOOL_FOCUS = ["Face lock","IP-Adapter","ControlNet pose","Consistent character workflow","LoRA training","Negative embeddings","Regional prompting","Latent upscaling","Face restoration","Style transfer","Character reference sheet","Multi-angle lock","Expression lock"];
+const POLL_IDEAS = [
+  "\"Which style should I create next — X or Y?\" (IG/TikTok poll sticker)",
+  "\"Which prompt technique do you want a tutorial on?\" (Twitter/X poll)",
+  "\"Rate this twin 1-10\" (Story slider sticker)",
+  "\"Old twin vs new remix — which is better?\" (either/or poll)",
+  "\"Best twin of the week — vote in comments\" (IG poll)",
+  "\"Which tool should I cover next?\" (TikTok poll sticker)",
+  "\"What should I create for Sunday Free Create?\" (community vote)"
+];
+
+const WEEK_TEMPLATE = [
+  {dow:"Mon", label:"Style Drop", make:(w)=>`One new AI twin style: ${STYLE_VARIETY[w%STYLE_VARIETY.length]}`,
+    format:"Side-by-side original → AI twin + the exact prompt", platforms:["instagram","tiktok"],
+    hashtags:"#AITwin #AIAvatar #DigitalTwin #AIArt #CreateAITwin #PromptShare #AIStyle"},
+  {dow:"Tue", label:"Prompt Engineering", make:(w)=>`3–5 variations of the same twin using ${PROMPT_TECHNIQUE[w%PROMPT_TECHNIQUE.length]}`,
+    format:"Grid of results + short prompt notes", platforms:["instagram","twitter"],
+    hashtags:"#PromptEngineering #AIPrompt #AITwinTips #Midjourney #StableDiffusion #FluxAI #CreateWithAI"},
+  {dow:"Wed", label:"Process Time-lapse", make:()=>`Full creation process of one AI twin — from blank to final`,
+    format:"Speed-up screen recording or step-by-step stills", platforms:["tiktok","youtube"],
+    hashtags:"#AICreation #TimeLapse #AIProcess #HowIMakeAITwins #AIWorkflow #DigitalTwin"},
+  {dow:"Thu", label:"Twin Remix", make:(w)=>`Take a previous twin and remix it: ${REMIX_TYPE[w%REMIX_TYPE.length]}`,
+    format:"Original twin → Remix", platforms:["instagram","tiktok"],
+    hashtags:"#AIRemix #TwinVariation #AIArtRemix #CreateAI #AITransformation"},
+  {dow:"Fri", label:"Feature Twin", make:()=>`Your best AI twin of the week — highest quality / most interesting`,
+    format:"High-quality single image or short showcase reel + full prompt in caption", platforms:["instagram","twitter"],
+    hashtags:"#AITwinOfTheWeek #FeaturedAI #AIMasterpiece #DigitalClone #AIPortrait"},
+  {dow:"Sat", label:"Tool / Technique Focus", make:(w)=>`One specific tool/technique applied to a twin: ${TOOL_FOCUS[w%TOOL_FOCUS.length]}`,
+    format:"Before/after or comparison", platforms:["tiktok","youtube"],
+    hashtags:"#AITools #ControlNet #ConsistentCharacter #AITechnique #CreateAITwin"},
+  {dow:"Sun", label:"Free Create Day", make:()=>`Anything you feel like — wild experiment, new concept, or just pure fun twin`,
+    format:"Whatever comes out + prompt", platforms:["any"],
+    hashtags:"#SundayCreate #AIExperiment #FreeCreate #AITwinFun #JustCreate"},
+];
+
+function buildWeek(weekNum){
+  const w = weekNum - 1;
+  return WEEK_TEMPLATE.map((t, d) => ({
+    dateLabel: `Week ${weekNum} · Day ${d+1}`,
+    dow: t.dow,
+    label: t.label,
+    idea: t.make(w),
+    format: t.format,
+    platforms: t.platforms,
+    hashtags: t.hashtags,
+    poll: POLL_IDEAS[(w + d) % POLL_IDEAS.length]
+  }));
+}
+const WEEKS = Array.from({length:13}, (_,i)=>buildWeek(i+1));
+let activeWeek = 0;
+
+function renderWeekTabs(){
+  const el = document.getElementById("weekTabs");
+  el.innerHTML = "";
+  for(let i=0;i<13;i++){
+    const b = document.createElement("button");
+    b.className = "week-btn" + (i===activeWeek ? " active" : "");
+    b.textContent = "Week " + (i+1);
+    b.onclick = () => { activeWeek = i; renderWeekTabs(); renderDays(); };
+    el.appendChild(b);
+  }
+}
+function renderDays(){
+  const grid = document.getElementById("dayGrid");
+  grid.innerHTML = "";
+  WEEKS[activeWeek].forEach((day, i) => {
+    const card = document.createElement("div");
+    card.className = "card day-card";
+    card.innerHTML = `
+      <div class="day-top">
+        <div>
+          <div class="day-name">${day.dow} · ${day.dateLabel}</div>
+          <div class="day-category">${day.label}</div>
+        </div>
+        <div class="platform-badges">${day.platforms.map(p=>`<span class="platform-badge pf-${p}">${PF_LABEL[p]}</span>`).join('')}</div>
+      </div>
+      <div class="day-idea"><b>Create this</b>${day.idea}</div>
+      <div class="day-format"><b>Format:</b> ${day.format}</div>
+      <div class="hashtags">${day.hashtags}</div>
+      <div class="poll-badge"><span>🗳️</span><div><span class="tagline">Bonus poll/vote</span>${day.poll}</div></div>
+      <button class="copy-idea-btn" onclick="copyIdea(${i}, this)">⧉ Copy post idea</button>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function copyIdea(i, btn){
+  const day = WEEKS[activeWeek][i];
+  const text = `${day.dow} · ${day.dateLabel} — ${day.label}\nPlatforms: ${day.platforms.map(p=>PF_LABEL[p]).join(', ')}\nFormat: ${day.format}\n\nCreate this: ${day.idea}\n\n${day.hashtags}\n\nBonus poll/vote: ${day.poll}`;
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "✓ Copied";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = original; btn.classList.remove("copied"); }, 1600);
+    showToast("Post idea copied to clipboard");
+  }).catch(() => showToast("Copy failed — try selecting the text manually"));
+}
+
+function copyFullPlan(btn){
+  let lines = ["AI TWIN CREATION CALENDAR — [AI TWIN NAME]\n"];
+  WEEKS.forEach((week, wi) => {
+    lines.push(`\n--- WEEK ${wi+1} ---`);
+    week.forEach(day => {
+      lines.push(`${day.dow} (${day.dateLabel}) — ${day.label} | ${day.platforms.map(p=>PF_LABEL[p]).join('/')} | ${day.format}\n  Create this: ${day.idea}\n  ${day.hashtags}\n  Bonus poll/vote: ${day.poll}`);
+    });
+  });
+  const text = lines.join("\n");
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "✓ Copied all 90 days";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = original; btn.classList.remove("copied"); }, 2000);
+    showToast("Full 90-day plan copied to clipboard");
+  }).catch(() => showToast("Copy failed — try again"));
+}
+
+/* ===================== ANALYTICS ===================== */
+const KPIS = [
+  {label:"Engagement Rate", val:"7.8%", delta:"+1.2 pts vs last month", up:true},
+  {label:"Reach", val:"482K", delta:"+18% vs last month", up:true},
+  {label:"Follower Growth", val:"+9,340", delta:"+4.1% net growth", up:true},
+  {label:"Conversion Rate", val:"2.3%", delta:"−0.3 pts vs last month", up:false},
+];
+function renderKPIs(){
+  const row = document.getElementById("kpiRow");
+  row.innerHTML = "";
+  KPIS.forEach(k => {
+    const c = document.createElement("div");
+    c.className = "card kpi-card";
+    c.innerHTML = `<div class="kpi-label">${k.label}</div><div class="kpi-val">${k.val}</div>
+      <div class="kpi-delta ${k.up?'up':'down'}">${k.up?'▲':'▼'} ${k.delta}</div>`;
+    row.appendChild(c);
+  });
+}
+
+function renderTrend(){
+  const pts = [62,58,65,70,68,74,71,77,73,80,76,82,79,85,88,84,90,87,93,89,95,92,97,94,99,96,101,98,104,101];
+  const max = Math.max(...pts), min = Math.min(...pts);
+  const w=400,h=140,pad=10;
+  const coords = pts.map((p,i)=>{
+    const x = pad + (i/(pts.length-1))*(w-2*pad);
+    const y = h-pad - ((p-min)/(max-min))*(h-2*pad);
+    return [x,y];
+  });
+  const path = coords.map((c,i)=> (i===0?'M':'L')+c[0].toFixed(1)+','+c[1].toFixed(1)).join(' ');
+  const area = path + ` L${coords[coords.length-1][0]},${h-pad} L${coords[0][0]},${h-pad} Z`;
+  document.getElementById("trendSvg").innerHTML = `
+    <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#22D3EE" stop-opacity="0"/>
+    </linearGradient></defs>
+    <path d="${area}" fill="url(#tg)"/>
+    <path d="${path}" fill="none" stroke="#22D3EE" stroke-width="2"/>
+  `;
+}
+
+function renderDonut(){
+  const segs = [{v:68,c:"#4ADE80"},{v:24,c:"#63667A"},{v:8,c:"#F0716B"}];
+  const r=50,cx=60,cy=60,circ=2*Math.PI*r;
+  let offset=0, html="";
+  segs.forEach(s=>{
+    const len = (s.v/100)*circ;
+    html += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.c}" stroke-width="16"
+      stroke-dasharray="${len} ${circ-len}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += len;
+  });
+  document.getElementById("donutSvg").innerHTML = html + `<text x="60" y="65" text-anchor="middle" font-family="IBM Plex Mono" font-size="16" fill="#ECEDF4">68%</text>`;
+}
+
+function renderBars(){
+  const data = [{l:"Instagram",v:210,max:250,c:"#E871C7"},{l:"TikTok",v:248,max:250,c:"#22D3EE"},{l:"Twitter/X",v:96,max:250,c:"#8BA4FF"},{l:"YT Shorts",v:142,max:250,c:"#F0716B"}];
+  const el = document.getElementById("barChart");
+  el.innerHTML = "";
+  data.forEach(d=>{
+    const row = document.createElement("div");
+    row.className = "bar-row";
+    const pct = (d.v/d.max)*100;
+    row.innerHTML = `<div class="bar-label">${d.l}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${d.c}"></div></div><div class="bar-val">${d.v}K</div>`;
+    el.appendChild(row);
+  });
+}
+
+/* ===================== BRAND COLLABORATIONS ===================== */
+const STAGES = ["Prospecting","Outreach Sent","Negotiating","Active Campaign","Completed"];
+const PARTNERS = [
+  {name:"[Brand Partner A]", stage:0, niche:"Skincare", value:"$—", contact:"[Contact Name]"},
+  {name:"[Brand Partner B]", stage:1, niche:"Fashion", value:"$4,500 (proposed)", contact:"[Contact Name]"},
+  {name:"[Brand Partner C]", stage:2, niche:"Wellness app", value:"$7,200 (in negotiation)", contact:"[Contact Name]"},
+  {name:"[Brand Partner D]", stage:3, niche:"Beverage", value:"$12,000", contact:"[Contact Name]"},
+  {name:"[Brand Partner E]", stage:3, niche:"Tech accessory", value:"$6,800", contact:"[Contact Name]"},
+  {name:"[Brand Partner F]", stage:4, niche:"Beauty tools", value:"$9,100 (paid)", contact:"[Contact Name]"},
+];
+// per-partner mutable communication log (session only)
+PARTNERS.forEach((p,i)=>{
+  p.id = i;
+  p.log = [
+    {ts:"Mon 10:12 AM", body:"Initial outreach sent — intro deck + [AI TWIN NAME] media kit attached."},
+    {ts:"Wed 3:40 PM", body:"Brand replied — interested, requested audience demo breakdown."},
+  ];
+  p.brief = {
+    deliverables: "[e.g. 2 Reels + 1 TikTok + 3 Story frames]",
+    deadline: "[Campaign deadline]",
+    usageRights: "[e.g. 90-day paid usage, organic only]",
+    campaign: "[CAMPAIGN NAME]",
+  };
+  p.report = {
+    reach: (Math.round((80+i*23)))+"K",
+    engagement: (4.1 + i*0.6).toFixed(1)+"%",
+    clicks: (300 + i*140),
+    conversions: (12 + i*5),
+  };
+});
+
+function renderKanban(){
+  const board = document.getElementById("kanban");
+  board.innerHTML = "";
+  STAGES.forEach((stage, idx) => {
+    const col = document.createElement("div");
+    col.className = "kcol";
+    const items = PARTNERS.filter(p=>p.stage===idx);
+    col.innerHTML = `<div class="kcol-head"><h5>${stage}</h5><span class="kcol-count">${items.length}</span></div>`;
+    items.forEach(p=>{
+      const card = document.createElement("div");
+      card.className = "pcard";
+      card.onclick = () => openDrawer(p.id);
+      card.innerHTML = `<h6>${p.name}</h6><div class="meta">${p.niche} · ${p.contact}</div><div class="val">${p.value}</div>`;
+      col.appendChild(card);
+    });
+    board.appendChild(col);
+  });
+}
+
+function openDrawer(id){
+  const p = PARTNERS[id];
+  const overlay = document.getElementById("overlay");
+  const drawer = document.getElementById("drawer");
+  drawer.innerHTML = `
+    <div class="drawer-head"><h3>${p.name}</h3><button class="close-btn" onclick="closeDrawer()">✕</button></div>
+    <div class="drawer-sub">${p.niche} partner · Stage: ${STAGES[p.stage]}</div>
+
+    <div class="drawer-section">
+      <h4>Campaign brief</h4>
+      <div class="brief-row"><span class="k">Campaign</span><span class="placeholder">${p.brief.campaign}</span></div>
+      <div class="brief-row"><span class="k">Deliverables</span><span>${p.brief.deliverables}</span></div>
+      <div class="brief-row"><span class="k">Deadline</span><span>${p.brief.deadline}</span></div>
+      <div class="brief-row"><span class="k">Usage rights</span><span>${p.brief.usageRights}</span></div>
+    </div>
+
+    <div class="drawer-section">
+      <h4>Performance report</h4>
+      <div class="mini-kpis">
+        <div class="mini-kpi"><div class="l">Reach</div><div class="v">${p.report.reach}</div></div>
+        <div class="mini-kpi"><div class="l">Engagement</div><div class="v">${p.report.engagement}</div></div>
+        <div class="mini-kpi"><div class="l">Link Clicks</div><div class="v">${p.report.clicks}</div></div>
+        <div class="mini-kpi"><div class="l">Conversions</div><div class="v">${p.report.conversions}</div></div>
+      </div>
+      <button class="mini-btn" style="margin-top:12px;width:100%" onclick="copyReport(${p.id})">Copy report summary</button>
+    </div>
+
+    <div class="drawer-section">
+      <h4>Communication log</h4>
+      <div id="logList">${p.log.map(l=>`<div class="log-item"><div class="ts">${l.ts}</div><div class="body">${l.body}</div></div>`).join('')}</div>
+      <div class="log-input">
+        <input id="logInput" type="text" placeholder="Add a note...">
+        <button class="mini-btn primary" onclick="addLog(${p.id})">Add</button>
+      </div>
+    </div>
+  `;
+  overlay.classList.add("show");
+}
+function closeDrawer(){ document.getElementById("overlay").classList.remove("show"); }
+function addLog(id){
+  const input = document.getElementById("logInput");
+  const text = input.value.trim();
+  if(!text) return;
+  const p = PARTNERS[id];
+  const now = new Date();
+  p.log.push({ts: now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}), body:text});
+  openDrawer(id);
+  showToast("Note added to communication log");
+}
+function copyReport(id){
+  const p = PARTNERS[id];
+  const text = `${p.name} — Performance Report\nReach: ${p.report.reach}\nEngagement: ${p.report.engagement}\nLink Clicks: ${p.report.clicks}\nConversions: ${p.report.conversions}`;
+  navigator.clipboard.writeText(text).then(()=>showToast("Report summary copied"));
+}
+
+/* ===================== TABS ===================== */
+function showTab(tab){
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===tab));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("panel-"+tab).classList.add("active");
+}
+
+/* ===================== TOAST ===================== */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 2400);
+}
+
+/* ===================== INIT ===================== */
+renderWeekTabs(); renderDays();
+renderKPIs(); renderTrend(); renderDonut(); renderBars();
+renderKanban();
+</script>
+</body>
+</html>
