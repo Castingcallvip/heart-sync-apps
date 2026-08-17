@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe & Outfit Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0B10; --surface:#151319; --surface-2:#1B1820; --line:#2A2732; --line-soft:#211E27;
+  --pink:#FF2E7E; --pink-soft:rgba(255,46,126,.14); --pink-dim:rgba(255,46,126,.35);
+  --violet:#8B5CF6; --gold:#F5C451;
+  --text:#F2F1F6; --text-dim:#9C98A8; --text-faint:#6B6778;
+  --radius:16px; --font-d:'Space Grotesk',sans-serif; --font-b:'Inter',sans-serif; --font-m:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);-webkit-font-smoothing:antialiased;}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(900px 500px at 90% -10%, rgba(255,46,126,.12), transparent 60%),
+             radial-gradient(800px 460px at -10% 110%, rgba(139,92,246,.10), transparent 60%);}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,textarea,select{font-family:inherit;}
+::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+
+.shell{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:30px 22px 90px;}
+.topline{font-family:var(--font-m);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px;}
+h1{font-family:var(--font-d);font-weight:700;font-size:24px;margin-bottom:6px;}
+.lede{color:var(--text-dim);font-size:13px;margin-bottom:28px;line-height:1.55;}
+
+h2{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.section{margin-bottom:26px;}
+
+.pill-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pill{
+  background:var(--surface); border:1px solid var(--line); border-radius:11px;
+  padding:13px 15px; text-align:left; font-size:13.5px; font-weight:600; color:var(--text-dim);
+  display:flex; align-items:center; gap:9px; transition:all .18s ease;
+}
+.pill:hover{border-color:var(--pink-dim); color:var(--text);}
+.pill.active{background:var(--pink-soft); border-color:var(--pink); color:var(--text); box-shadow:0 0 0 1px var(--pink) inset;}
+.pill .em{font-size:15px;}
+
+textarea.vibe-input{
+  width:100%; background:var(--surface); border:1px solid var(--line); border-radius:12px;
+  padding:14px 16px; color:var(--text); font-size:13.5px; min-height:76px; resize:vertical; outline:none;
+  line-height:1.5; transition:border-color .2s;
+}
+textarea.vibe-input::placeholder{color:var(--text-faint);}
+textarea.vibe-input:focus{border-color:var(--pink);}
+
+.zodiac-card{
+  background:linear-gradient(135deg, rgba(139,92,246,.22), rgba(255,46,126,.20));
+  border:1px solid var(--pink-dim); border-radius:16px; padding:16px 18px;
+}
+.zodiac-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+.zodiac-title{display:flex; align-items:center; gap:9px; font-weight:700; font-size:14px;}
+.checkbox{
+  width:22px; height:22px; border-radius:6px; border:1.5px solid var(--pink-dim);
+  display:flex; align-items:center; justify-content:center; transition:all .15s; flex-shrink:0;
+}
+.checkbox.checked{background:var(--pink); border-color:var(--pink); box-shadow:0 0 10px rgba(255,46,126,.5);}
+.checkbox svg{opacity:0; transition:opacity .15s;}
+.checkbox.checked svg{opacity:1;}
+.zodiac-select{
+  width:100%; background:rgba(10,10,15,.55); border:1px solid var(--line); border-radius:10px;
+  padding:11px 14px; color:var(--text); font-size:13.5px; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239C98A8' stroke-width='1.6' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 14px center; padding-right:34px;
+  transition:opacity .2s;
+}
+.zodiac-select:disabled{opacity:.4;}
+
+.spec-section-title{display:flex; align-items:center; gap:7px; margin-bottom:14px; color:var(--pink); font-weight:700; font-size:13.5px;}
+.spec-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.spec-field label{display:block; font-size:11.5px; color:var(--text-dim); font-weight:600; margin-bottom:7px;}
+.spec-field select{
+  width:100%; background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:11px 14px; color:var(--pink); font-weight:600; font-size:13px; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23FF2E7E' stroke-width='1.6' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 14px center; padding-right:34px; outline:none;
+  transition:border-color .2s;
+}
+.spec-field select:focus{border-color:var(--pink);}
+
+.gen-btn{
+  width:100%; margin-top:28px; padding:15px; border-radius:12px; text-align:center;
+  background:linear-gradient(90deg, var(--pink), #B0389A); color:#fff; font-weight:700; font-size:14px;
+  letter-spacing:.01em; transition:all .2s;
+}
+.gen-btn:hover{filter:brightness(1.08); box-shadow:0 12px 26px -14px rgba(255,46,126,.6);}
+
+.result-panel{
+  margin-top:20px; background:#0D0C11; border:1px solid var(--line); border-radius:14px; padding:18px 20px; display:none;
+}
+.result-panel.show{display:block;}
+.result-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+.result-head h4{font-family:var(--font-m); font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--text-dim);}
+.copy-btn{font-family:var(--font-m); font-size:11px; padding:6px 12px; border-radius:8px; border:1px solid var(--line); color:var(--text-dim);}
+.copy-btn:hover{color:var(--text); border-color:var(--pink);}
+.copy-btn.copied{color:var(--pink); border-color:var(--pink);}
+.result-text{font-family:var(--font-m); font-size:12.5px; line-height:1.7; color:#F3C9E0; white-space:pre-wrap; cursor:text; user-select:text;}
+
+.toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(16px);
+  background:var(--surface-2); border:1px solid var(--line); padding:11px 18px; border-radius:10px;
+  font-size:12.5px; font-family:var(--font-m); opacity:0; pointer-events:none; transition:all .3s; z-index:50;
+  display:flex; align-items:center; gap:8px;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+.toast .dot{width:6px;height:6px;border-radius:50%;background:var(--pink);box-shadow:0 0 6px var(--pink);}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topline">Heart Sync AI Creative Agency / Vibe &amp; Outfit Generator</div>
+  <h1>Dress the twin for the moment</h1>
+  <p class="lede">Pick a preset, describe your own vibe, or both — this only touches outfit, styling, and setting. Core face and body traits stay locked separately.</p>
+
+  <div class="section">
+    <h2>🌦️ Seasonal Inspiration Presets</h2>
+    <div class="pill-grid" id="seasonGrid"></div>
+  </div>
+
+  <div class="section">
+    <h2>🔥 Trending Fashion Archetypes</h2>
+    <div class="pill-grid" id="archetypeGrid"></div>
+  </div>
+
+  <div class="section">
+    <h2>✏️ Or Describe Your Custom Vibe &amp; Occasion</h2>
+    <textarea class="vibe-input" id="customVibe" placeholder="e.g. 'A sleek metallic corset dress with stiletto heels for a VIP rooftop lounge in Miami...'"></textarea>
+  </div>
+
+  <div class="section">
+    <div class="zodiac-card">
+      <div class="zodiac-head">
+        <div class="zodiac-title"><span>🌙</span> Cosmic Zodiac Infusion</div>
+        <button class="checkbox" id="zodiacCheck" onclick="toggleZodiac()">
+          <svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <select class="zodiac-select" id="zodiacSelect" disabled>
+        <option>♈ Aries (The Trailblazer Baddie)</option>
+        <option>♉ Taurus (The Soft Luxury Baddie)</option>
+        <option>♊ Gemini (The Trendsetter Baddie)</option>
+        <option>♋ Cancer (The Glam Empress Baddie)</option>
+        <option>♌ Leo (The Main Character Baddie)</option>
+        <option>♍ Virgo (The Pristine Aesthetic Baddie)</option>
+        <option>♎ Libra (The Haute Couture Baddie)</option>
+        <option>♏ Scorpio (The Femme Fatale Baddie)</option>
+        <option>♐ Sagittarius (The Jetsetter Baddie)</option>
+        <option>♑ Capricorn (The CEO Mogul Baddie)</option>
+        <option>♒ Aquarius (The Avant-Garde Baddie)</option>
+        <option>♓ Pisces (The Dreamy Siren Baddie)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="spec-section-title">🎀 MODEL SPECIFICATIONS</div>
+    <div class="spec-grid">
+      <div class="spec-field">
+        <label>Composition</label>
+        <select id="specComposition">
+          <option>Full-body</option>
+          <option>Mid-body</option>
+          <option>Headshot</option>
+        </select>
+      </div>
+      <div class="spec-field">
+        <label>Ethnicity</label>
+        <select id="specEthnicity">
+          <option>Unspecified</option>
+          <option>African American</option>
+          <option>Afro-Caribbean</option>
+          <option>Ethiopian</option>
+          <option>Nigerian</option>
+          <option>Sudanese</option>
+          <option>African-European</option>
+          <option>Latina</option>
+          <option>Brazilian</option>
+          <option>Dominican</option>
+          <option>Puerto Rican</option>
+          <option>Caucasian</option>
+          <option>Irish</option>
+          <option>Italian</option>
+          <option>Middle Eastern</option>
+          <option>Indian</option>
+          <option>East Asian</option>
+          <option>Filipino</option>
+        </select>
+      </div>
+      <div class="spec-field">
+        <label>Skin Tone</label>
+        <select id="specSkin">
+          <option>Unspecified</option>
+          <option>Porcelain</option>
+          <option>Ivory</option>
+          <option>Sand</option>
+          <option>Honey</option>
+          <option>Tan</option>
+          <option>Olive</option>
+          <option>Golden</option>
+          <option>Caramel</option>
+          <option>Chestnut</option>
+          <option>Almond</option>
+          <option>Toffee</option>
+          <option>Bronze</option>
+          <option>Walnut</option>
+          <option>Mocha</option>
+          <option>Espresso</option>
+          <option>Deep Ebony</option>
+          <option>Warm Ivory</option>
+          <option>Cool Porcelain</option>
+          <option>Golden Honey</option>
+        </select>
+      </div>
+      <div class="spec-field">
+        <label>Hairstyle</label>
+        <select id="specHair">
+          <option>High Ponytail</option>
+          <option>Sleek Bun</option>
+          <option>Messy Bun</option>
+          <option>Low Ponytail</option>
+          <option>Middle Part Straight</option>
+          <option>Side Part Wave</option>
+          <option>Long Layers</option>
+          <option>Bob Cut</option>
+          <option>Blunt Bob</option>
+          <option>Pixie Cut</option>
+          <option>Bantu Knots</option>
+          <option>Braids with Beads</option>
+          <option>Cornrows</option>
+          <option>Afro Puff</option>
+          <option>Full Afro</option>
+          <option>Deep Wave</option>
+          <option>Wet Curls</option>
+          <option>Curtain Bangs</option>
+          <option>Hollywood Waves</option>
+          <option>HD Lace Frontal Wig</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <button class="gen-btn" onclick="generateVibe()">✨ Generate Vibe Prompt</button>
+
+  <div class="result-panel" id="resultPanel">
+    <div class="result-head"><h4>Assembled vibe prompt</h4><button class="copy-btn" id="copyBtn" onclick="copyResult()">Copy</button></div>
+    <div class="result-text" id="resultText" onclick="selectResultText()"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script>
+const SEASONS = [
+  {em:"❄️", label:"Winter Chill"}, {em:"🌸", label:"Spring Fling"},
+  {em:"☀️", label:"Summer Heat"}, {em:"🍂", label:"Autumn Vibe"},
+];
+const ARCHETYPES = [
+  {em:"💅", label:"Baddie of the Day"}, {em:"👑", label:"Streetwear Queen"},
+  {em:"💋", label:"Date Night Slay"}, {em:"🧖‍♀️", label:"Soft Life Luxe"},
+];
+
+let selectedSeason = null;
+let selectedArchetype = null;
+
+function renderPillGrid(elId, items, groupSetter){
+  const el = document.getElementById(elId);
+  el.innerHTML = "";
+  items.forEach((item, i) => {
+    const b = document.createElement("button");
+    b.className = "pill";
+    b.innerHTML = `<span class="em">${item.em}</span> ${item.label}`;
+    b.onclick = () => {
+      const isActive = b.classList.contains("active");
+      [...el.children].forEach(c => c.classList.remove("active"));
+      if(!isActive){ b.classList.add("active"); groupSetter(item.label); }
+      else { groupSetter(null); }
+    };
+    el.appendChild(b);
+  });
+}
+renderPillGrid("seasonGrid", SEASONS, (v)=>selectedSeason=v);
+renderPillGrid("archetypeGrid", ARCHETYPES, (v)=>selectedArchetype=v);
+
+function toggleZodiac(){
+  const box = document.getElementById("zodiacCheck");
+  const select = document.getElementById("zodiacSelect");
+  const on = box.classList.toggle("checked");
+  select.disabled = !on;
+}
+
+function generateVibe(){
+  const custom = document.getElementById("customVibe").value.trim();
+  const zodiacOn = document.getElementById("zodiacCheck").classList.contains("checked");
+  const zodiac = zodiacOn ? document.getElementById("zodiacSelect").value : null;
+  const comp = document.getElementById("specComposition").value;
+  const eth = document.getElementById("specEthnicity").value;
+  const skin = document.getElementById("specSkin").value;
+  const hair = document.getElementById("specHair").value;
+
+  const vibeParts = [];
+  if(selectedSeason) vibeParts.push(selectedSeason);
+  if(selectedArchetype) vibeParts.push(selectedArchetype);
+  if(custom) vibeParts.push(custom);
+  if(vibeParts.length === 0) vibeParts.push("[No vibe selected — pick a preset or describe one]");
+
+  let text = `VIBE / OUTFIT: ${vibeParts.join(" · ")}\n`;
+  if(zodiac) text += `COSMIC ZODIAC INFUSION: ${zodiac} — infuse styling with this sign's energy and symbolism\n`;
+  text += `\nMODEL SPECIFICATIONS\nComposition: ${comp}\nEthnicity: ${eth}\nSkin Tone: ${skin}\nHairstyle: ${hair}`;
+  text += `\n\nNote: apply on top of this character's locked CORE DNA (face, eyes, body) — outfit/styling only.`;
+
+  document.getElementById("resultText").textContent = text;
+  document.getElementById("resultPanel").classList.add("show");
+  showToast("Vibe prompt generated");
+}
+
+function copyToClipboard(text){
+  return new Promise((resolve, reject) => {
+    if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(resolve).catch(() => {
+        fallbackCopy(text) ? resolve() : reject();
+      });
+    } else {
+      fallbackCopy(text) ? resolve() : reject();
+    }
+  });
+}
+function fallbackCopy(text){
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.top = "-9999px";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+function selectResultText(){
+  const el = document.getElementById("resultText");
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function copyResult(){
+  const text = document.getElementById("resultText").textContent;
+  const btn = document.getElementById("copyBtn");
+  copyToClipboard(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = "✓ Copied";
+    btn.classList.add("copied");
+    setTimeout(()=>{ btn.textContent = orig; btn.classList.remove("copied"); }, 1600);
+    showToast("Copied to clipboard");
+  }).catch(() => {
+    selectResultText();
+    showToast("Auto-copy blocked here — text is selected, press Ctrl/Cmd+C");
+  });
+}
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+</script>
+</body>
+</html>
