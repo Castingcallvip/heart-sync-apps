@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heart Sync — Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0F; --surface:#15161E; --surface-2:#1B1D28; --line:#262838; --line-soft:#1E2029;
+  --violet:#8B5CF6; --violet-soft:rgba(139,92,246,.14);
+  --cyan:#22D3EE; --pink:#FF2E7E; --gold:#E8B93F;
+  --text:#ECEDF4; --text-dim:#9A9DB0; --text-faint:#63667A;
+  --radius:16px; --font-d:'Space Grotesk',sans-serif; --font-b:'Inter',sans-serif; --font-m:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);-webkit-font-smoothing:antialiased;}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(1100px 600px at 85% -10%, rgba(139,92,246,.14), transparent 60%),
+             radial-gradient(900px 500px at -10% 110%, rgba(255,46,126,.10), transparent 60%);}
+a{color:inherit;text-decoration:none;}
+::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+
+.shell{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:40px 24px 90px;}
+.eyebrow{font-family:var(--font-m);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--violet);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.eyebrow::before{content:"";width:16px;height:1px;background:var(--violet);}
+h1{font-family:var(--font-d);font-weight:700;font-size:36px;line-height:1.15;margin-bottom:12px;}
+h1 span{background:linear-gradient(90deg,var(--violet),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.lede{color:var(--text-dim);font-size:14.5px;max-width:560px;line-height:1.6;margin-bottom:36px;}
+
+.section-label{font-family:var(--font-m);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);margin:32px 0 14px;}
+.section-label:first-of-type{margin-top:0;}
+
+.tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+@media (max-width:640px){.tool-grid{grid-template-columns:1fr;}}
+
+.tool-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;transition:all .2s ease;position:relative;}
+.tool-card:hover{border-color:var(--violet);transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(139,92,246,.5);}
+.tool-tag{font-family:var(--font-m);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px;display:block;}
+.tool-card h3{font-family:var(--font-d);font-size:16.5px;margin-bottom:6px;}
+.tool-card p{font-size:12.5px;color:var(--text-dim);line-height:1.5;margin-bottom:14px;}
+.tool-go{font-size:12.5px;font-weight:600;color:var(--violet);display:flex;align-items:center;gap:6px;}
+.tool-go::after{content:"→";transition:transform .2s;}
+.tool-card:hover .tool-go::after{transform:translateX(3px);}
+
+.note{margin-top:36px;font-family:var(--font-m);font-size:11.5px;color:var(--text-faint);line-height:1.6;
+  border-top:1px solid var(--line-soft);padding-top:20px;}
+.note b{color:var(--text-dim);}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="eyebrow">Heart Sync</div>
+  <h1>Every tool, <span>one home base.</span></h1>
+  <p class="lede">This links out to everything built so far. Files need to live in the same folder for these links to work — open this page from wherever you saved the rest of them.</p>
+
+  <div class="section-label">AI Twin System</div>
+  <div class="tool-grid">
+    <a class="tool-card" href="ai-twin-command-center.html">
+      <span class="tool-tag">Command Center</span>
+      <h3>AI Twin Command Center</h3>
+      <p>Content calendar, analytics dashboard, and brand collaboration pipeline.</p>
+      <span class="tool-go">Open</span>
+    </a>
+    <a class="tool-card" href="character-dna-studio.html">
+      <span class="tool-tag">Character Builder</span>
+      <h3>Character DNA Studio</h3>
+      <p>Lock a face's core traits, pick a reference, run the consistency QA check.</p>
+      <span class="tool-go">Open</span>
+    </a>
+    <a class="tool-card" href="vibe-outfit-generator.html">
+      <span class="tool-tag">Styling</span>
+      <h3>Vibe &amp; Outfit Generator</h3>
+      <p>Seasonal presets, fashion archetypes, zodiac infusion, model specs.</p>
+      <span class="tool-go">Open</span>
+    </a>
+    <a class="tool-card" href="scene-style-prompt-builder.html">
+      <span class="tool-tag">Prompt Builder</span>
+      <h3>Scene &amp; Style Prompt Builder</h3>
+      <p>Guided, step-by-step wizard across 500+ styling, hair, makeup, and lash options.</p>
+      <span class="tool-go">Open</span>
+    </a>
+  </div>
+
+  <div class="section-label">Dream Doll</div>
+  <div class="tool-grid">
+    <a class="tool-card" href="dream-doll-public-app.html">
+      <span class="tool-tag">Customer-Facing</span>
+      <h3>Dream Doll — Public App</h3>
+      <p>Shop pre-made looks, build your own, everything saved to My Library.</p>
+      <span class="tool-go">Open</span>
+    </a>
+    <a class="tool-card" href="dream-doll-admin.html">
+      <span class="tool-tag">Internal</span>
+      <h3>Dream Doll — Admin</h3>
+      <p>Overview stats, catalog management, and order history.</p>
+      <span class="tool-go">Open</span>
+    </a>
+  </div>
+
+  <div class="section-label">Emote Studio</div>
+  <div class="tool-grid">
+    <a class="tool-card" href="emote-studio-shop.html">
+      <span class="tool-tag">Customer-Facing</span>
+      <h3>Emote Studio — Shop</h3>
+      <p>Browse ready-made packs, or request a custom emoji/avatar order.</p>
+      <span class="tool-go">Open</span>
+    </a>
+  </div>
+
+  <div class="section-label">CastMusic Studio</div>
+  <div class="tool-grid">
+    <a class="tool-card" href="castmusic-production-hub.html">
+      <span class="tool-tag">Production</span>
+      <h3>CastMusic — Production Hub</h3>
+      <p>Episode calendar, guest pipeline, and download/growth analytics.</p>
+      <span class="tool-go">Open</span>
+    </a>
+  </div>
+
+  <div class="note">
+    <b>Heads up:</b> these are standalone files, not a hosted website — this Home page only works if every file above is saved in the same folder as this one. Once you're ready to actually publish this, it'll need real hosting (e.g. Netlify, Vercel, or wherever your other Heart Sync sites live) so all of this has a real, shareable URL instead of local files.
+  </div>
+</div>
+</body>
+</html>
