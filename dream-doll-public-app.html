@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dream Doll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0B10; --surface:#151319; --surface-2:#1B1820; --line:#2A2732; --line-soft:#211E27;
+  --pink:#FF2E7E; --pink-soft:rgba(255,46,126,.14); --pink-dim:rgba(255,46,126,.35);
+  --violet:#8B5CF6; --green:#4ADE80; --green-soft:rgba(74,222,128,.14); --gold:#E8B93F;
+  --text:#F2F1F6; --text-dim:#9C98A8; --text-faint:#6B6778;
+  --radius:16px; --font-d:'Space Grotesk',sans-serif; --font-b:'Inter',sans-serif; --font-m:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);-webkit-font-smoothing:antialiased;}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(900px 500px at 90% -10%, rgba(255,46,126,.12), transparent 60%),
+             radial-gradient(800px 460px at -10% 110%, rgba(139,92,246,.10), transparent 60%);}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,select,textarea{font-family:inherit;}
+::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+
+.shell{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:26px 24px 90px;}
+.topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;}
+.brand{font-family:var(--font-m);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);}
+.lib-chip{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--line);border-radius:100px;font-size:12.5px;color:var(--text-dim);font-family:var(--font-m);}
+.lib-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--pink);box-shadow:0 0 6px var(--pink);}
+
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line-soft);margin-bottom:24px;}
+.tab-btn{padding:12px 18px;font-size:13.5px;font-weight:600;color:var(--text-faint);border-bottom:2px solid transparent;}
+.tab-btn:hover{color:var(--text-dim);}
+.tab-btn.active{color:var(--text);border-color:var(--pink);}
+.panel{display:none;animation:rise .35s ease;}
+.panel.active{display:block;}
+@keyframes rise{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+h1{font-family:var(--font-d);font-weight:700;font-size:25px;margin-bottom:6px;}
+.sub{color:var(--text-dim);font-size:13px;margin-bottom:20px;max-width:600px;line-height:1.55;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);}
+
+/* ---------- SHOP ---------- */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.filter-btn{padding:8px 15px;border-radius:9px;border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--text-dim);font-family:var(--font-m);}
+.filter-btn.active{background:var(--pink-soft);border-color:var(--pink);color:var(--text);}
+.shop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media (max-width:860px){.shop-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:560px){.shop-grid{grid-template-columns:1fr;}}
+.product-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all .2s ease;}
+.product-card:hover{transform:translateY(-3px);border-color:var(--pink-dim);box-shadow:0 16px 34px -20px rgba(255,46,126,.5);}
+.product-thumb{aspect-ratio:3/4;position:relative;}
+.product-body{padding:14px 15px 16px;}
+.product-name{font-family:var(--font-d);font-size:15px;font-weight:700;margin-bottom:6px;}
+.product-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.ptag{font-size:9.5px;font-family:var(--font-m);color:var(--text-faint);border:1px solid var(--line);padding:2px 7px;border-radius:100px;}
+.product-foot{display:flex;justify-content:space-between;align-items:center;}
+.price{font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--pink);}
+.buy-btn-sm{font-family:var(--font-m);font-size:11px;padding:7px 13px;border-radius:8px;background:var(--pink-soft);color:var(--pink);border:1px solid var(--pink-dim);font-weight:600;}
+.buy-btn-sm:hover{background:var(--pink);color:#fff;}
+
+/* ---------- CREATE (wizard) ---------- */
+.wizard-wrap{max-width:520px;}
+.progress-label{display:flex;justify-content:space-between;font-family:var(--font-m);font-size:10.5px;color:var(--text-faint);margin-bottom:6px;}
+.progress-track{height:5px;background:var(--surface-2);border-radius:100px;overflow:hidden;margin-bottom:22px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--violet),var(--pink));border-radius:100px;transition:width .35s ease;}
+.step-eyebrow{font-family:var(--font-m);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--pink);margin-bottom:8px;}
+.step-title{font-family:var(--font-d);font-weight:700;font-size:21px;margin-bottom:6px;}
+.step-sub{color:var(--text-dim);font-size:13px;margin-bottom:20px;line-height:1.5;}
+.opt-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:6px;}
+.opt-card{padding:14px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--line);
+  font-size:14px;font-weight:600;color:var(--text-dim);transition:all .18s;flex:1 1 calc(50% - 5px);text-align:center;min-width:120px;}
+.opt-card:hover{border-color:var(--pink-dim);color:var(--text);}
+.opt-card.active{background:var(--pink);border-color:var(--pink);color:#fff;box-shadow:0 8px 20px -10px rgba(255,46,126,.6);}
+.wiz-nav{display:flex;gap:10px;margin-top:20px;}
+.nav-btn{padding:14px;border-radius:12px;text-align:center;font-weight:700;font-size:14px;transition:all .2s;}
+.nav-back{background:var(--surface-2);border:1px solid var(--line);color:var(--text-dim);flex:0 0 90px;}
+.nav-back:hover{color:var(--text);border-color:var(--text-dim);}
+.nav-next{flex:1;background:linear-gradient(90deg, var(--pink), #B0389A);color:#fff;box-shadow:0 12px 26px -14px rgba(255,46,126,.6);}
+.nav-next:hover{filter:brightness(1.08);}
+.nav-next:disabled{opacity:.4;box-shadow:none;cursor:not-allowed;}
+.review-group{margin-bottom:14px;}
+.review-group h4{font-family:var(--font-m);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--pink);margin-bottom:6px;}
+.review-val{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.jump-btn{font-family:var(--font-m);font-size:10px;color:var(--text-faint);}
+.jump-btn:hover{color:var(--pink);}
+.result-panel{margin-top:16px;background:#0D0C11;border:1px solid var(--line);border-radius:14px;padding:18px 20px;}
+.result-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.result-head h4{font-family:var(--font-m);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);}
+.copy-btn{font-family:var(--font-m);font-size:11px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);color:var(--text-dim);}
+.copy-btn:hover{color:var(--text);border-color:var(--pink);}
+.copy-btn.copied{color:var(--green);border-color:var(--green);}
+.result-text{font-family:var(--font-m);font-size:12.5px;line-height:1.75;color:#F3C9E0;white-space:pre-wrap;cursor:text;user-select:text;margin-bottom:14px;}
+.save-lib-btn{width:100%;padding:13px;border-radius:11px;background:var(--green-soft);border:1px solid rgba(74,222,128,.4);color:var(--green);font-weight:700;font-size:13.5px;}
+.save-lib-btn:hover{background:var(--green);color:#0A0A0F;}
+.save-lib-btn.saved{opacity:.7;pointer-events:none;}
+.new-create-btn{width:100%;padding:12px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);color:var(--text-dim);font-weight:600;font-size:13px;margin-top:10px;}
+.new-create-btn:hover{color:var(--text);}
+
+/* ---------- LIBRARY ---------- */
+.lib-empty{padding:40px 20px;text-align:center;color:var(--text-faint);font-size:13px;}
+.lib-grid{display:flex;flex-direction:column;gap:10px;}
+.lib-item{display:flex;align-items:center;gap:14px;padding:14px 16px;}
+.lib-swatch{width:44px;height:44px;border-radius:9px;flex-shrink:0;}
+.lib-info{flex:1;min-width:0;}
+.lib-name{font-weight:700;font-size:13.5px;margin-bottom:3px;}
+.lib-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.lib-badge{font-size:9.5px;font-family:var(--font-m);padding:3px 8px;border-radius:100px;font-weight:600;}
+.lib-badge.purchased{background:rgba(232,185,63,.15);color:var(--gold);}
+.lib-badge.created{background:var(--pink-soft);color:var(--pink);}
+.lib-copy{font-family:var(--font-m);font-size:11px;padding:7px 12px;border-radius:8px;border:1px solid var(--line);color:var(--text-dim);flex-shrink:0;}
+.lib-copy:hover{color:var(--text);border-color:var(--pink);}
+.lib-copy.copied{color:var(--green);border-color:var(--green);}
+
+/* ---------- drawer (shop detail) ---------- */
+.overlay{position:fixed;inset:0;background:rgba(6,6,10,.65);backdrop-filter:blur(3px);z-index:40;display:none;align-items:flex-start;justify-content:flex-end;}
+.overlay.show{display:flex;}
+.drawer{width:min(440px,94vw);height:100vh;background:var(--bg);border-left:1px solid var(--line);overflow-y:auto;padding:0 0 40px;}
+.drawer-thumb{aspect-ratio:4/3;position:relative;}
+.drawer-body{padding:22px 24px;}
+.close-btn{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:rgba(10,10,15,.6);
+  backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;z-index:2;}
+.drawer-name{font-family:var(--font-d);font-size:21px;font-weight:700;margin-bottom:8px;}
+.drawer-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.drawer-desc{font-size:13.5px;color:var(--text-dim);line-height:1.6;margin-bottom:20px;}
+.spec-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:13px;}
+.spec-row .k{color:var(--text-faint);}
+.spec-row .v{font-weight:600;}
+.drawer-price-row{display:flex;justify-content:space-between;align-items:center;margin:20px 0 16px;}
+.drawer-price{font-family:var(--font-d);font-size:24px;font-weight:700;color:var(--pink);}
+.buy-btn-lg{width:100%;padding:15px;border-radius:12px;text-align:center;background:linear-gradient(90deg,var(--pink),#B0389A);
+  color:#fff;font-weight:700;font-size:14px;box-shadow:0 12px 26px -14px rgba(255,46,126,.6);}
+.buy-btn-lg:hover{filter:brightness(1.08);}
+.confirm-box{padding:22px 24px;text-align:center;}
+.confirm-icon{width:56px;height:56px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:#0A0A0F;}
+.confirm-title{font-family:var(--font-d);font-size:19px;font-weight:700;margin-bottom:8px;}
+.confirm-sub{font-size:13px;color:var(--text-dim);margin-bottom:20px;line-height:1.55;}
+.continue-btn{width:100%;padding:13px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);color:var(--text-dim);font-weight:600;font-size:13px;}
+.continue-btn:hover{color:var(--text);}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--surface-2);border:1px solid var(--line);padding:11px 18px;border-radius:10px;
+  font-size:12.5px;font-family:var(--font-m);opacity:0;pointer-events:none;transition:all .3s;z-index:60;display:flex;align-items:center;gap:8px;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast .dot{width:6px;height:6px;border-radius:50%;background:var(--pink);box-shadow:0 0 6px var(--pink);}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">Dream Doll</div>
+    <div class="lib-chip"><span class="dot"></span><span id="libCount">0 in your library</span></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="shop" onclick="showTab('shop')">Shop</button>
+    <button class="tab-btn" data-tab="create" onclick="showTab('create')">Create Your Own</button>
+    <button class="tab-btn" data-tab="library" onclick="showTab('library')">My Library</button>
+  </div>
+
+  <!-- ============ SHOP ============ -->
+  <section class="panel active" id="panel-shop">
+    <h1>Ready-made looks</h1>
+    <p class="sub">Pre-built and quality-checked — buy one and it's instantly in your library.</p>
+    <div class="filter-row" id="filterRow"></div>
+    <div class="shop-grid" id="shopGrid"></div>
+  </section>
+
+  <!-- ============ CREATE ============ -->
+  <section class="panel" id="panel-create">
+    <h1>Create your own</h1>
+    <p class="sub">Answer a few quick questions and build a custom look — it saves straight to your library when you're done.</p>
+    <div class="wizard-wrap" id="wizardWrap"></div>
+  </section>
+
+  <!-- ============ LIBRARY ============ -->
+  <section class="panel" id="panel-library">
+    <h1>My Library</h1>
+    <p class="sub">Everything you've bought or built lives here.</p>
+    <div id="libraryBody"></div>
+  </section>
+</div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this) closeDrawer()">
+  <div class="drawer" id="drawer"></div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script>
+/* ===================== SHARED DATA ===================== */
+const STYLE_PALETTE = {
+  Portrait:["#FF2E7E","#B0389A"], Fashion:["#E871C7","#8B5CF6"], Interior:["#F5C451","#B0389A"],
+  Product:["#22D3EE","#8B5CF6"], Cyberpunk:["#8B5CF6","#22D3EE"]
+};
+function swatchGradient(style){
+  const [c1,c2] = STYLE_PALETTE[style] || ["#8B5CF6","#22D3EE"];
+  return `linear-gradient(135deg, ${c1}, ${c2})`;
+}
+function thumbSVG(style, h){
+  const [c1,c2] = STYLE_PALETTE[style] || ["#8B5CF6","#22D3EE"];
+  const seed = style.length * 37;
+  return `<svg viewBox="0 0 300 ${h}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <defs><linearGradient id="g-${style}-${h}" x1="0" y1="0" x2="1" y2="1" gradientTransform="rotate(${seed%360} .5 .5)">
+      <stop offset="0%" stop-color="${c1}" stop-opacity="0.55"/><stop offset="100%" stop-color="${c2}" stop-opacity="0.32"/>
+    </linearGradient></defs>
+    <rect width="100%" height="100%" fill="#14151E"/><rect width="100%" height="100%" fill="url(#g-${style}-${h})"/>
+    <circle cx="150" cy="${h*0.38}" r="${h*0.22}" fill="none" stroke="${c1}" stroke-opacity="0.45" stroke-width="1.4"/>
+    <text x="12" y="${h-14}" font-family="IBM Plex Mono" font-size="9" fill="${c1}" opacity="0.65">${style.toUpperCase()}</text></svg>`;
+}
+let library = []; // {type:'purchased'|'created', name, style, framing, background, season, price, id}
+let libId = 1;
+
+function updateLibChip(){ document.getElementById("libCount").textContent = `${library.length} in your library`; }
+
+/* ===================== SHOP ===================== */
+const PRODUCTS = [
+  {name:"Neon Nights", style:"Cyberpunk", framing:"Full Body", background:"Abstract", price:12, desc:"High-contrast neon lighting with a full-body cyberpunk silhouette against an abstract glow backdrop."},
+  {name:"Golden Hour Editorial", style:"Fashion", framing:"Upper Body", background:"Outdoor", price:9, desc:"Warm, sun-drenched fashion editorial framing — soft golden light, upper-body composition."},
+  {name:"Studio Classic", style:"Portrait", framing:"Headshot", background:"Studio", price:6, desc:"Clean, timeless studio headshot — even lighting, minimal backdrop."},
+  {name:"Marble Interior Moment", style:"Interior", framing:"Mid Body", background:"Studio", price:10, desc:"Elevated interior scene framed mid-body, soft studio lighting over a marble-inspired set."},
+  {name:"Product Spotlight", style:"Product", framing:"Full Body", background:"Studio", price:8, desc:"Crisp, evenly lit full-body product-style composition."},
+  {name:"Abstract Dream", style:"Cyberpunk", framing:"Upper Body", background:"Abstract", price:11, desc:"Dreamlike abstract color fields wrapped around an upper-body cyberpunk-toned composition."},
+  {name:"Outdoor Glow", style:"Portrait", framing:"Mid Body", background:"Outdoor", price:7, desc:"Natural outdoor portrait with soft ambient light."},
+  {name:"Runway Ready", style:"Fashion", framing:"Full Body", background:"Studio", price:13, desc:"Full-body fashion composition styled like a runway still."},
+  {name:"Quiet Interior", style:"Interior", framing:"Headshot", background:"Outdoor", price:6, desc:"A softer interior-adjacent headshot with natural light spilling in."},
+];
+let activeFilter = "All";
+
+function renderFilters(){
+  const styles = ["All", ...new Set(PRODUCTS.map(p=>p.style))];
+  const el = document.getElementById("filterRow");
+  el.innerHTML = "";
+  styles.forEach(s => {
+    const b = document.createElement("button");
+    b.className = "filter-btn" + (s===activeFilter ? " active" : "");
+    b.textContent = s;
+    b.onclick = () => { activeFilter = s; renderFilters(); renderShopGrid(); };
+    el.appendChild(b);
+  });
+}
+function renderShopGrid(){
+  const grid = document.getElementById("shopGrid");
+  grid.innerHTML = "";
+  const list = activeFilter === "All" ? PRODUCTS : PRODUCTS.filter(p=>p.style===activeFilter);
+  list.forEach(p => {
+    const idx = PRODUCTS.indexOf(p);
+    const card = document.createElement("div");
+    card.className = "product-card";
+    card.onclick = () => openDrawer(idx);
+    card.innerHTML = `
+      <div class="product-thumb">${thumbSVG(p.style, 340)}</div>
+      <div class="product-body">
+        <div class="product-name">${p.name}</div>
+        <div class="product-tags"><span class="ptag">${p.style}</span><span class="ptag">${p.framing}</span><span class="ptag">${p.background}</span></div>
+        <div class="product-foot"><span class="price">$${p.price}</span><button class="buy-btn-sm" onclick="event.stopPropagation(); openDrawer(${idx});">View</button></div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+function openDrawer(idx){
+  const p = PRODUCTS[idx];
+  const drawer = document.getElementById("drawer");
+  drawer.innerHTML = `
+    <div class="drawer-thumb">${thumbSVG(p.style, 300)}<button class="close-btn" onclick="closeDrawer()">✕</button></div>
+    <div class="drawer-body">
+      <div class="drawer-name">${p.name}</div>
+      <div class="drawer-tags"><span class="ptag">${p.style}</span><span class="ptag">${p.framing}</span><span class="ptag">${p.background}</span></div>
+      <div class="drawer-desc">${p.desc}</div>
+      <div class="spec-row"><span class="k">Style</span><span class="v">${p.style}</span></div>
+      <div class="spec-row"><span class="k">Framing</span><span class="v">${p.framing}</span></div>
+      <div class="spec-row"><span class="k">Background</span><span class="v">${p.background}</span></div>
+      <div class="drawer-price-row"><span style="font-size:12.5px;color:var(--text-faint);font-family:var(--font-m);">One-time purchase</span><span class="drawer-price">$${p.price}</span></div>
+      <button class="buy-btn-lg" onclick="buyProduct(${idx})">Buy Now</button>
+    </div>`;
+  document.getElementById("overlay").classList.add("show");
+}
+function closeDrawer(){ document.getElementById("overlay").classList.remove("show"); }
+function buyProduct(idx){
+  const p = PRODUCTS[idx];
+  library.push({id:libId++, type:"purchased", name:p.name, style:p.style, framing:p.framing, background:p.background, price:p.price});
+  updateLibChip();
+  renderLibrary();
+  document.getElementById("drawer").innerHTML = `
+    <div class="confirm-box">
+      <div class="confirm-icon">✓</div>
+      <div class="confirm-title">You got it</div>
+      <div class="confirm-sub">"${p.name}" is now in your library.</div>
+      <button class="continue-btn" onclick="closeDrawer()">Continue shopping</button>
+    </div>`;
+  showToast(`Purchased "${p.name}" — added to your library`);
+}
+
+/* ===================== CREATE (wizard) ===================== */
+const STEPS = [
+  {key:"style", title:"Choose a Style", sub:"Pick the overall visual direction.", options:["Portrait","Fashion","Interior","Product","Cyberpunk"], optional:false},
+  {key:"framing", title:"Select Framing", sub:"How much of the shot is in frame.", options:["Headshot","Upper Body","Mid Body","Full Body"], optional:false},
+  {key:"season", title:"Choose a Season", sub:"Optional — leave as None to skip seasonal styling.", options:["None","Winter","Summer","Spring","Fall"], optional:true},
+  {key:"background", title:"Select Background", sub:"Where the shot is set.", options:["Studio","Outdoor","Abstract"], optional:false},
+];
+let wizStep = 0;
+let wizAnswers = { style:null, framing:null, season:"None", background:null };
+let wizSaved = false;
+
+function renderWizard(){
+  const wrap = document.getElementById("wizardWrap");
+  const pct = Math.round(((wizStep+1) / (STEPS.length+1)) * 100);
+  let inner = `<div class="progress-label"><span>${wizStep===STEPS.length ? 'Review & save' : `Step ${wizStep+1} of ${STEPS.length+1}`}</span><span>${pct}%</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+
+  if(wizStep < STEPS.length){
+    const s = STEPS[wizStep];
+    inner += `
+      <div class="step-eyebrow">${s.optional ? "Optional" : `Question ${wizStep+1}`}</div>
+      <div class="step-title">${s.title}</div>
+      <div class="step-sub">${s.sub}</div>
+      <div class="opt-grid" id="optGrid"></div>
+      <div class="wiz-nav">
+        <button class="nav-btn nav-back" id="wizBack" onclick="wizBack()" style="visibility:${wizStep===0?'hidden':'visible'}">← Back</button>
+        <button class="nav-btn nav-next" id="wizNext" onclick="wizNext()">Next</button>
+      </div>`;
+    wrap.innerHTML = inner;
+    const grid = document.getElementById("optGrid");
+    s.options.forEach(o => {
+      const b = document.createElement("button");
+      b.className = "opt-card" + (wizAnswers[s.key]===o ? " active" : "");
+      b.textContent = o;
+      b.onclick = () => { wizAnswers[s.key] = o; renderWizard(); };
+      grid.appendChild(b);
+    });
+    document.getElementById("wizNext").disabled = !s.optional && !wizAnswers[s.key];
+  } else {
+    wizSaved = false;
+    inner += `
+      <div class="step-eyebrow">Almost there</div>
+      <div class="step-title">Review your look</div>
+      <div class="step-sub">Save it to your library, or go back and change anything.</div>
+    `;
+    STEPS.forEach((s,i) => {
+      inner += `<div class="review-group"><h4>${s.title} <button class="jump-btn" onclick="wizJump(${i})">edit</button></h4><div class="review-val">${wizAnswers[s.key]||'—'}</div></div>`;
+    });
+    inner += `
+      <div class="wiz-nav" style="margin-bottom:16px;">
+        <button class="nav-btn nav-back" onclick="wizBack()">← Back</button>
+        <button class="nav-btn nav-next" onclick="generateWiz()">✨ Generate</button>
+      </div>
+      <div class="result-panel" id="wizResultPanel" style="display:none;">
+        <div class="result-head"><h4>Assembled prompt</h4><button class="copy-btn" id="wizCopyBtn" onclick="copyWizResult()">Copy</button></div>
+        <div class="result-text" id="wizResultText" onclick="selectWizResultText()"></div>
+        <button class="save-lib-btn" id="saveLibBtn" onclick="saveToLibrary()">+ Save to My Library</button>
+        <button class="new-create-btn" onclick="resetWizard()">Start a new one</button>
+      </div>
+    `;
+    wrap.innerHTML = inner;
+  }
+}
+function wizNext(){ if(wizStep<STEPS.length){ wizStep++; renderWizard(); } }
+function wizBack(){ if(wizStep>0){ wizStep--; renderWizard(); } }
+function wizJump(i){ wizStep=i; renderWizard(); }
+function resetWizard(){ wizStep=0; wizAnswers={style:null,framing:null,season:"None",background:null}; wizSaved=false; renderWizard(); }
+
+function generateWiz(){
+  const lines = [`Style: ${wizAnswers.style}`, `Framing: ${wizAnswers.framing}`];
+  if(wizAnswers.season && wizAnswers.season!=="None") lines.push(`Season: ${wizAnswers.season}`);
+  lines.push(`Background: ${wizAnswers.background}`);
+  lines.push("", "Note: apply on top of this character's locked CORE DNA (face, eyes, body) — styling and scene only.");
+  document.getElementById("wizResultText").textContent = lines.join("\n");
+  document.getElementById("wizResultPanel").style.display = "block";
+  showToast("Prompt generated");
+}
+function saveToLibrary(){
+  if(wizSaved) return;
+  library.push({id:libId++, type:"created", name:`${wizAnswers.style} · ${wizAnswers.framing}`, style:wizAnswers.style, framing:wizAnswers.framing, background:wizAnswers.background, season:wizAnswers.season});
+  wizSaved = true;
+  updateLibChip();
+  renderLibrary();
+  const btn = document.getElementById("saveLibBtn");
+  btn.textContent = "✓ Saved to your library";
+  btn.classList.add("saved");
+  showToast("Saved to your library");
+}
+
+/* ===================== LIBRARY ===================== */
+function renderLibrary(){
+  const el = document.getElementById("libraryBody");
+  if(library.length === 0){
+    el.innerHTML = `<div class="card lib-empty">Nothing here yet — buy a look from the Shop or build one in Create Your Own.</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="lib-grid">${library.map(item => `
+    <div class="card lib-item">
+      <span class="lib-swatch" style="background:${swatchGradient(item.style)}"></span>
+      <div class="lib-info">
+        <div class="lib-name">${item.name}</div>
+        <div class="lib-tags">
+          <span class="lib-badge ${item.type}">${item.type === 'purchased' ? 'Purchased' : 'Created'}</span>
+          <span class="ptag">${item.style}</span><span class="ptag">${item.framing}</span><span class="ptag">${item.background}</span>
+          ${item.season && item.season!=="None" ? `<span class="ptag">${item.season}</span>` : ''}
+        </div>
+      </div>
+      <button class="lib-copy" onclick="copyLibItem(${item.id}, this)">⧉ Copy</button>
+    </div>
+  `).join('')}</div>`;
+}
+function copyLibItem(id, btn){
+  const item = library.find(i=>i.id===id);
+  const lines = [`${item.name}`, `Style: ${item.style}`, `Framing: ${item.framing}`];
+  if(item.season && item.season!=="None") lines.push(`Season: ${item.season}`);
+  lines.push(`Background: ${item.background}`);
+  if(item.price) lines.push(`Purchased — $${item.price}`);
+  const text = lines.join("\n");
+  copyToClipboard(text).then(()=>{
+    const orig = btn.textContent;
+    btn.textContent = "✓ Copied"; btn.classList.add("copied");
+    setTimeout(()=>{ btn.textContent=orig; btn.classList.remove("copied"); }, 1500);
+    showToast("Copied to clipboard");
+  }).catch(()=>showToast("Copy failed — try again"));
+}
+
+/* ===================== CLIPBOARD (with fallback) ===================== */
+function copyToClipboard(text){
+  return new Promise((resolve, reject) => {
+    if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(resolve).catch(() => fallbackCopy(text) ? resolve() : reject());
+    } else { fallbackCopy(text) ? resolve() : reject(); }
+  });
+}
+function fallbackCopy(text){
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position="fixed"; ta.style.top="-9999px";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+function selectWizResultText(){
+  const el = document.getElementById("wizResultText");
+  const range = document.createRange(); range.selectNodeContents(el);
+  const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+}
+function copyWizResult(){
+  const text = document.getElementById("wizResultText").textContent;
+  const btn = document.getElementById("wizCopyBtn");
+  copyToClipboard(text).then(()=>{
+    const orig = btn.textContent;
+    btn.textContent = "✓ Copied"; btn.classList.add("copied");
+    setTimeout(()=>{ btn.textContent=orig; btn.classList.remove("copied"); }, 1500);
+    showToast("Copied to clipboard");
+  }).catch(()=>{ selectWizResultText(); showToast("Auto-copy blocked — text selected, press Ctrl/Cmd+C"); });
+}
+
+/* ===================== TABS ===================== */
+function showTab(tab){
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===tab));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("panel-"+tab).classList.add("active");
+}
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 2400);
+}
+
+/* ===================== INIT ===================== */
+renderFilters();
+renderShopGrid();
+renderWizard();
+renderLibrary();
+updateLibChip();
+</script>
+</body>
+</html>
