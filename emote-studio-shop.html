@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heart Sync Emote Studio — Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0B10; --surface:#151319; --surface-2:#1B1820; --line:#2A2732; --line-soft:#211E27;
+  --pink:#FF2E7E; --pink-soft:rgba(255,46,126,.14); --pink-dim:rgba(255,46,126,.35);
+  --gold:#E8B93F; --gold-soft:rgba(232,185,63,.14);
+  --green:#4ADE80; --green-soft:rgba(74,222,128,.14);
+  --text:#F2F1F6; --text-dim:#9C98A8; --text-faint:#6B6778;
+  --radius:16px; --font-d:'Space Grotesk',sans-serif; --font-b:'Inter',sans-serif; --font-m:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);-webkit-font-smoothing:antialiased;}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(900px 500px at 90% -10%, rgba(232,185,63,.10), transparent 60%),
+             radial-gradient(800px 460px at -10% 110%, rgba(255,46,126,.12), transparent 60%);}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+
+.shell{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:28px 24px 90px;}
+.topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;}
+.brand{font-family:var(--font-m);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);}
+.brand b{color:var(--gold);}
+.cart-chip{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--line);border-radius:100px;font-size:12.5px;color:var(--text-dim);font-family:var(--font-m);}
+.cart-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--pink);box-shadow:0 0 6px var(--pink);}
+
+h1{font-family:var(--font-d);font-weight:700;font-size:28px;margin-bottom:8px;}
+.lede{color:var(--text-dim);font-size:13.5px;margin-bottom:22px;max-width:620px;line-height:1.55;}
+.notice{background:var(--gold-soft);border:1px solid rgba(232,185,63,.35);border-radius:12px;padding:12px 16px;
+  font-size:12px;color:var(--text-dim);margin-bottom:24px;line-height:1.55;}
+.notice b{color:var(--gold);}
+
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+.filter-btn{padding:8px 15px;border-radius:9px;border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--text-dim);font-family:var(--font-m);}
+.filter-btn.active{background:var(--pink-soft);border-color:var(--pink);color:var(--text);}
+
+.shop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media (max-width:860px){.shop-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:560px){.shop-grid{grid-template-columns:1fr;}}
+
+.product-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all .2s ease;}
+.product-card:hover{transform:translateY(-3px);border-color:var(--pink-dim);box-shadow:0 16px 34px -20px rgba(255,46,126,.5);}
+.product-thumb{aspect-ratio:4/3;position:relative;}
+.concept-flag{position:absolute;top:9px;left:9px;font-family:var(--font-m);font-size:9px;letter-spacing:.04em;color:var(--gold);
+  background:rgba(10,10,15,.7);backdrop-filter:blur(3px);padding:3px 8px;border-radius:100px;border:1px solid rgba(232,185,63,.4);}
+.product-body{padding:14px 15px 16px;}
+.product-name{font-family:var(--font-d);font-size:15px;font-weight:700;margin-bottom:6px;line-height:1.3;}
+.product-desc{font-size:11.5px;color:var(--text-faint);margin-bottom:10px;line-height:1.45;}
+.product-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.ptag{font-size:9.5px;font-family:var(--font-m);color:var(--text-faint);border:1px solid var(--line);padding:2px 7px;border-radius:100px;}
+.product-foot{display:flex;justify-content:space-between;align-items:center;}
+.price{font-family:var(--font-d);font-weight:700;font-size:16px;color:var(--pink);}
+.buy-btn-sm{font-family:var(--font-m);font-size:11px;padding:7px 13px;border-radius:8px;background:var(--pink-soft);color:var(--pink);border:1px solid var(--pink-dim);font-weight:600;}
+.buy-btn-sm:hover{background:var(--pink);color:#fff;}
+
+.custom-order-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:12px;
+  background:linear-gradient(90deg,var(--gold),#C98A2E);color:#0A0A0F;font-weight:700;font-size:13.5px;
+  margin-bottom:18px;box-shadow:0 12px 26px -14px rgba(232,185,63,.5);transition:all .2s;}
+.custom-order-btn:hover{filter:brightness(1.08);}
+
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:7px;}
+.field input, .field select, .field textarea{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:11px 13px;color:var(--text);font-size:13.5px;outline:none;}
+.field textarea{min-height:80px;resize:vertical;}
+.field input:focus, .field select:focus, .field textarea:focus{border-color:var(--pink);}
+.tier-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.tier-card{padding:13px 15px;border-radius:11px;background:var(--surface);border:1px solid var(--line);text-align:left;transition:all .18s;}
+.tier-card:hover{border-color:var(--pink-dim);}
+.tier-card.active{background:var(--pink-soft);border-color:var(--pink);}
+.tier-card .t-name{font-weight:700;font-size:13.5px;margin-bottom:3px;}
+.tier-card .t-desc{font-size:11.5px;color:var(--text-faint);}
+.submit-order-btn{width:100%;padding:14px;border-radius:12px;background:linear-gradient(90deg,var(--gold),#C98A2E);
+  color:#0A0A0F;font-weight:700;font-size:14px;margin-top:6px;}
+.submit-order-btn:hover{filter:brightness(1.08);}
+.status-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-m);font-size:10.5px;color:var(--gold);
+  border:1px solid rgba(232,185,63,.35);padding:4px 10px;border-radius:100px;margin-top:12px;}
+.status-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);}
+.receipt-box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:12.5px;color:var(--text-dim);line-height:1.7;white-space:pre-wrap;font-family:var(--font-m);margin-bottom:14px;}
+
+.cashapp-badge{display:inline-flex;align-items:center;gap:7px;background:#00D64222;border:1px solid #00D64255;
+  border-radius:9px;padding:6px 12px;font-family:var(--font-m);font-size:12.5px;color:#00D642;font-weight:600;}
+.cashapp-badge .ca-icon{width:18px;height:18px;border-radius:5px;background:#00D642;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-d);font-size:12px;font-weight:700;color:#0A0A0F;flex-shrink:0;}
+
+.paypal-badge{display:inline-flex;align-items:center;gap:7px;background:#0070BA22;border:1px solid #0070BA55;
+  border-radius:9px;padding:6px 12px;font-family:var(--font-m);font-size:12.5px;color:#4FA8E8;font-weight:600;}
+.paypal-badge .pp-icon{width:18px;height:18px;border-radius:5px;background:#0070BA;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-d);font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+
+.social-footer{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:32px;padding-top:20px;border-top:1px solid var(--line-soft);}
+.social-label{font-family:var(--font-m);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);}
+.social-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:9px;font-family:var(--font-m);
+  font-size:12.5px;font-weight:600;text-decoration:none;transition:all .18s;}
+.social-badge.fb{background:#1877F222;border:1px solid #1877F255;color:#4E9BFF;}
+.social-badge.fb:hover{background:#1877F238;}
+.social-icon{width:18px;height:18px;border-radius:5px;background:#1877F2;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-d);font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+
+.overlay{position:fixed;inset:0;background:rgba(6,6,10,.65);backdrop-filter:blur(3px);z-index:40;display:none;align-items:flex-start;justify-content:flex-end;}
+.overlay.show{display:flex;}
+.drawer{width:min(440px,94vw);height:100vh;background:var(--bg);border-left:1px solid var(--line);overflow-y:auto;padding:0 0 40px;}
+.drawer-thumb{aspect-ratio:4/3;position:relative;}
+.drawer-body{padding:22px 24px;}
+.close-btn{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:rgba(10,10,15,.6);
+  backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;z-index:2;}
+.drawer-name{font-family:var(--font-d);font-size:21px;font-weight:700;margin-bottom:8px;}
+.drawer-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.drawer-desc{font-size:13.5px;color:var(--text-dim);line-height:1.6;margin-bottom:20px;}
+.spec-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:13px;}
+.spec-row .k{color:var(--text-faint);}
+.spec-row .v{font-weight:600;}
+.drawer-price-row{display:flex;justify-content:space-between;align-items:center;margin:20px 0 16px;}
+.drawer-price{font-family:var(--font-d);font-size:24px;font-weight:700;color:var(--pink);}
+.buy-btn-lg{width:100%;padding:15px;border-radius:12px;text-align:center;background:linear-gradient(90deg,var(--pink),#B0389A);
+  color:#fff;font-weight:700;font-size:14px;box-shadow:0 12px 26px -14px rgba(255,46,126,.6);}
+.buy-btn-lg:hover{filter:brightness(1.08);}
+.confirm-box{padding:22px 24px;text-align:center;}
+.confirm-icon{width:56px;height:56px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:#0A0A0F;}
+.confirm-title{font-family:var(--font-d);font-size:19px;font-weight:700;margin-bottom:8px;}
+.confirm-sub{font-size:13px;color:var(--text-dim);margin-bottom:20px;line-height:1.55;}
+.continue-btn{width:100%;padding:13px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);color:var(--text-dim);font-weight:600;font-size:13px;}
+.continue-btn:hover{color:var(--text);}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--surface-2);border:1px solid var(--line);padding:11px 18px;border-radius:10px;
+  font-size:12.5px;font-family:var(--font-m);opacity:0;pointer-events:none;transition:all .3s;z-index:60;display:flex;align-items:center;gap:8px;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast .dot{width:6px;height:6px;border-radius:50%;background:var(--pink);box-shadow:0 0 6px var(--pink);}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">Heart Sync <b>Emote Studio</b> / Shop</div>
+    <div class="cart-chip"><span class="dot"></span><span id="cartCount">0 purchased</span></div>
+  </div>
+  <h1>Ready-made emote packs</h1>
+  <p class="lede">Glossy 3D chibi sticker art, transparent backgrounds, ready for Instagram, TikTok, YouTube, and Discord.</p>
+  <button class="custom-order-btn" onclick="window.open('https://heartsyncmediagroup.app.n8n.cloud/form/emote-studios-order', '_blank')">✨ Order Custom Emoji / Avatar Pack</button>
+  <div class="notice"><b>Note on brand-inspired packs:</b> "concept" packs are original, de-branded designs inspired by a category (energy drinks, luxury cars, rideshare) — they don't use any real company's logo or trademark, consistent with the studio's own licensing policy.</div>
+  <div class="notice" style="background:var(--green-soft);border-color:rgba(74,222,128,.35);display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <b style="color:var(--green);">Payment:</b>
+    <span class="cashapp-badge"><span class="ca-icon">$</span>Cash App</span>
+    <span class="paypal-badge"><span class="pp-icon">P</span>PayPal</span>
+    <span style="font-family:var(--font-m);font-size:10.5px;color:var(--text-faint);">— details shared securely at checkout</span>
+  </div>
+
+  <div class="filter-row" id="filterRow"></div>
+  <div class="shop-grid" id="shopGrid"></div>
+
+  <div class="social-footer">
+    <span class="social-label">Follow / message us</span>
+    <a class="social-badge fb" href="[FACEBOOK PAGE LINK]" target="_blank" rel="noopener">
+      <span class="social-icon">f</span>Facebook
+    </a>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this) closeDrawer()">
+  <div class="drawer" id="drawer"></div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script>
+const CATEGORY_PALETTE = {
+  Zodiac:["#8B5CF6","#FF2E7E"], Cosmic:["#4ADE80","#8B5CF6"], Lifestyle:["#E8B93F","#FF2E7E"],
+  Concept:["#22D3EE","#8B5CF6"], Seasonal:["#FF2E7E","#E8B93F"]
+};
+
+const PRODUCTS = [
+  {name:"Cancer Zodiac Emoji Pack", category:"Zodiac", count:12, price:15, desc:"Cancer Queen, Comfort Zone, Nap Queen, Loyalty Over Everything, Protect My Peace, I Feel Everything, Trust My Intuition, Homebody Mode, Soft Heart Hard Shell, Don't Play With My People, Moody But Magical, Need My Space."},
+  {name:"Leo Zodiac Emoji Pack", category:"Zodiac", count:24, price:15, desc:"Bold, loyal, confident, born to shine — leo queen, secure the bag, crown on stress gone, boss moves, and more."},
+  {name:"Pisces Female Emoji Pack", category:"Zodiac", count:28, price:15, desc:"Dreamy, intuitive, compassionate — soft heart, artistic soul, boundaries are love, pisces queen, and more."},
+  {name:"Alien Emoji Pack", category:"Cosmic", count:24, price:14, desc:"Out-of-this-world reactions for any mood — hello earthlings, stay weird, top secret, mission complete, and more."},
+  {name:"Wine Mood Emoji Pack", category:"Lifestyle", count:15, price:16, desc:"Sip, unwind, and thrive — cheers to me, sip happens, focused flowing & flawless, more wine less worry."},
+  {name:"Coffee Lover Pack", category:"Lifestyle", count:16, price:17, desc:"Cozy, caffeinated everyday reactions — coffee time, coffee queen, 100% caffeinated, espresso yourself."},
+  {name:"Signature Glam Lifestyle Pack", category:"Lifestyle", count:16, price:18, desc:"Boss energy, cozy vibes, everyday glam — work mode, gym queen, girls night, shopping day, self care, and more."},
+  {name:"National Oyster Day", category:"Seasonal", count:1, price:8, desc:"A single fresh-and-fabulous seasonal drop, perfect for a themed daily post."},
+  {name:"Energy Boost Concept", category:"Concept", count:24, price:14, desc:"An original, de-branded energy-drink-inspired reaction pack — laser focus, high energy, no limits, born to win.", concept:true},
+  {name:"Luxury Drive Concept", category:"Concept", count:20, price:15, desc:"An original, de-branded luxury-automotive-inspired reaction pack — driven, focused, disciplined, unstoppable.", concept:true},
+  {name:"Rideshare Life Concept", category:"Concept", count:24, price:14, desc:"An original, de-branded rideshare-inspired reaction pack — requesting, on my way, five star ride, safe & sound.", concept:true},
+];
+
+let activeFilter = "All";
+
+function thumbSVG(cat, ratio, isConcept){
+  const [c1,c2] = CATEGORY_PALETTE[cat] || ["#8B5CF6","#FF2E7E"];
+  const seed = cat.length * 41;
+  return `
+  <svg viewBox="0 0 300 ${ratio}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <defs><linearGradient id="g-${cat}-${ratio}" x1="0" y1="0" x2="1" y2="1" gradientTransform="rotate(${seed%360} .5 .5)">
+      <stop offset="0%" stop-color="${c1}" stop-opacity="0.5"/><stop offset="100%" stop-color="${c2}" stop-opacity="0.3"/>
+    </linearGradient></defs>
+    <rect width="100%" height="100%" fill="#14151E"/><rect width="100%" height="100%" fill="url(#g-${cat}-${ratio})"/>
+    <circle cx="150" cy="${ratio*0.42}" r="${ratio*0.24}" fill="none" stroke="${c1}" stroke-opacity="0.45" stroke-width="1.4"/>
+    <text x="12" y="${ratio-14}" font-family="IBM Plex Mono" font-size="9" fill="${c1}" opacity="0.65">${cat.toUpperCase()}</text>
+    ${isConcept ? `<text x="12" y="22" font-family="IBM Plex Mono" font-size="8" fill="${c2}" opacity="0.6">ORIGINAL CONCEPT</text>` : ''}
+  </svg>`;
+}
+
+function renderFilters(){
+  const cats = ["All", ...new Set(PRODUCTS.map(p=>p.category))];
+  const el = document.getElementById("filterRow");
+  el.innerHTML = "";
+  cats.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "filter-btn" + (c===activeFilter ? " active" : "");
+    b.textContent = c;
+    b.onclick = () => { activeFilter = c; renderFilters(); renderGrid(); };
+    el.appendChild(b);
+  });
+}
+
+function renderGrid(){
+  const grid = document.getElementById("shopGrid");
+  grid.innerHTML = "";
+  const list = activeFilter === "All" ? PRODUCTS : PRODUCTS.filter(p=>p.category===activeFilter);
+  list.forEach(p => {
+    const idx = PRODUCTS.indexOf(p);
+    const card = document.createElement("div");
+    card.className = "product-card";
+    card.onclick = () => openDrawer(idx);
+    card.innerHTML = `
+      <div class="product-thumb">${thumbSVG(p.category, 220, p.concept)}${p.concept ? '<span class="concept-flag">Original Concept</span>' : ''}</div>
+      <div class="product-body">
+        <div class="product-name">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div class="product-tags"><span class="ptag">${p.category}</span><span class="ptag">${p.count} emote${p.count>1?'s':''}</span></div>
+        <div class="product-foot"><span class="price">$${p.price}</span><button class="buy-btn-sm" onclick="event.stopPropagation(); openDrawer(${idx});">View</button></div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function openDrawer(idx){
+  const p = PRODUCTS[idx];
+  const drawer = document.getElementById("drawer");
+  drawer.innerHTML = `
+    <div class="drawer-thumb">${thumbSVG(p.category, 300, p.concept)}<button class="close-btn" onclick="closeDrawer()">✕</button></div>
+    <div class="drawer-body">
+      <div class="drawer-name">${p.name}</div>
+      <div class="drawer-tags"><span class="ptag">${p.category}</span><span class="ptag">${p.count} emote${p.count>1?'s':''}</span>${p.concept?'<span class="ptag">Original Concept</span>':''}</div>
+      <div class="drawer-desc">${p.desc}</div>
+      <div class="spec-row"><span class="k">Format</span><span class="v">Transparent PNG</span></div>
+      <div class="spec-row"><span class="k">Style</span><span class="v">Glossy 3D Chibi</span></div>
+      <div class="spec-row"><span class="k">Count</span><span class="v">${p.count} emote${p.count>1?'s':''}</span></div>
+      <div class="drawer-price-row"><span style="font-size:12.5px;color:var(--text-faint);font-family:var(--font-m);">One-time purchase</span><span class="drawer-price">$${p.price}</span></div>
+      <div style="margin-bottom:12px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+          <span class="cashapp-badge"><span class="ca-icon">$</span>Cash App</span>
+          <span class="paypal-badge"><span class="pp-icon">P</span>PayPal</span>
+        </div>
+        <span style="font-family:var(--font-m);font-size:10.5px;color:var(--text-faint);">Handle/email sent via order confirmation — never displayed publicly on-page</span>
+      </div>
+      <button class="buy-btn-lg" onclick="buyProduct(${idx})">I've Paid — Confirm Order</button>
+    </div>`;
+  document.getElementById("overlay").classList.add("show");
+}
+function closeDrawer(){ document.getElementById("overlay").classList.remove("show"); }
+
+let purchases = 0;
+function buyProduct(idx){
+  const p = PRODUCTS[idx];
+  purchases++;
+  document.getElementById("cartCount").textContent = `${purchases} purchased`;
+  document.getElementById("drawer").innerHTML = `
+    <div class="confirm-box">
+      <div class="confirm-icon">✓</div>
+      <div class="confirm-title">You got it</div>
+      <div class="confirm-sub">"${p.name}" is now yours — delivered to [YOUR ACCOUNT LIBRARY] once your Cash App payment is confirmed.</div>
+      <button class="continue-btn" onclick="closeDrawer()">Continue shopping</button>
+    </div>`;
+  showToast(`Order confirmed — "${p.name}" ($${p.price} via Cash App)`);
+}
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 2400);
+}
+
+/* ===================== CUSTOM ORDER ===================== */
+const TIERS = [
+  {key:"personal", name:"Personal Emoji Pack", desc:"One person's face/personality — reactions, sayings, custom likeness."},
+  {key:"creator", name:"Creator Brand Pack", desc:"Reactions, catchphrases, and subscriber emojis built around your content."},
+  {key:"business", name:"Business / Organization Pack", desc:"Custom characters, campaign concepts, commercial usage rights."},
+];
+let selectedTier = null;
+
+function openCustomOrder(){
+  selectedTier = null;
+  const drawer = document.getElementById("drawer");
+  drawer.innerHTML = `
+    <div class="drawer-body" style="padding-top:24px;">
+      <button class="close-btn" style="position:static;float:right;background:none;color:var(--text-faint);" onclick="closeDrawer()">✕</button>
+      <div class="drawer-name">Order Custom Emoji / Avatar</div>
+      <div class="drawer-desc">Tell us what you need — this becomes a brief our team works from, not an instant generation.</div>
+      <div class="field"><label>Which tier fits best?</label>
+        <div class="tier-grid" id="tierGrid"></div>
+      </div>
+      <div class="field"><label>Your name or handle</label><input id="co-name" type="text" placeholder="e.g. @username"></div>
+      <div class="field"><label>Project / brand name</label><input id="co-project" type="text" placeholder="e.g. your podcast or business name"></div>
+      <div class="field"><label>Describe what you want</label><textarea id="co-desc" placeholder="Character look, expressions/sayings you want, platforms, any reference notes..."></textarea></div>
+      <div class="field"><label>Contact email</label><input id="co-email" type="text" placeholder="you@example.com"></div>
+      <button class="submit-order-btn" onclick="submitCustomOrder()">Submit Custom Order Request</button>
+    </div>
+  `;
+  const grid = document.getElementById("tierGrid");
+  TIERS.forEach(t => {
+    const b = document.createElement("button");
+    b.className = "tier-card";
+    b.innerHTML = `<div class="t-name">${t.name}</div><div class="t-desc">${t.desc}</div>`;
+    b.onclick = () => { selectedTier = t.key; document.querySelectorAll(".tier-card").forEach(c=>c.classList.remove("active")); b.classList.add("active"); };
+    grid.appendChild(b);
+  });
+  document.getElementById("overlay").classList.add("show");
+}
+
+function submitCustomOrder(){
+  const name = document.getElementById("co-name").value.trim() || "[not provided]";
+  const project = document.getElementById("co-project").value.trim() || "[not provided]";
+  const desc = document.getElementById("co-desc").value.trim() || "[not provided]";
+  const email = document.getElementById("co-email").value.trim() || "[not provided]";
+  const tier = TIERS.find(t=>t.key===selectedTier);
+
+  const receipt = `CUSTOM ORDER REQUEST
+From: ${name}
+Project/Brand: ${project}
+Tier: ${tier ? tier.name : "[not selected]"}
+Contact: ${email}
+
+Brief:
+${desc}
+
+Status: Submitted — awaiting review by [TEAM MEMBER NAME]`;
+
+  document.getElementById("drawer").innerHTML = `
+    <div class="confirm-box">
+      <div class="confirm-icon">✓</div>
+      <div class="confirm-title">Request submitted</div>
+      <div class="confirm-sub">Here's exactly what was received — a real build would notify your team and add this to the Production Board queue instead of just displaying it.</div>
+      <div class="receipt-box">${receipt}</div>
+      <div class="status-badge"><span class="dot"></span>Pending review</div>
+      <button class="continue-btn" style="margin-top:16px;" onclick="closeDrawer()">Close</button>
+    </div>`;
+  showToast("Custom order request submitted");
+}
+
+renderFilters();
+renderGrid();
+</script>
+</body>
+</html>
