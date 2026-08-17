@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scene & Style Prompt Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0B10; --surface:#151319; --surface-2:#1B1820; --chip:#232030; --line:#2A2732; --line-soft:#211E27;
+  --pink:#FF2E7E; --pink-soft:rgba(255,46,126,.14); --pink-dim:rgba(255,46,126,.35);
+  --text:#F2F1F6; --text-dim:#9C98A8; --text-faint:#6B6778;
+  --radius:16px; --font-d:'Space Grotesk',sans-serif; --font-b:'Inter',sans-serif; --font-m:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);-webkit-font-smoothing:antialiased;}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(900px 500px at 90% -10%, rgba(255,46,126,.12), transparent 60%),
+             radial-gradient(800px 460px at -10% 110%, rgba(139,92,246,.10), transparent 60%);}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input{font-family:inherit;}
+::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+
+.shell{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:26px 20px 110px;min-height:100vh;display:flex;flex-direction:column;}
+.topline{font-family:var(--font-m);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:14px;}
+
+/* progress */
+.progress-track{height:5px;background:var(--surface-2);border-radius:100px;overflow:hidden;margin-bottom:22px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--violet,#8B5CF6),var(--pink));border-radius:100px;transition:width .35s ease;}
+.progress-label{display:flex;justify-content:space-between;font-family:var(--font-m);font-size:10.5px;color:var(--text-faint);margin-bottom:6px;}
+
+/* step header */
+.step-eyebrow{font-family:var(--font-m);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--pink);margin-bottom:8px;}
+.step-title{font-family:var(--font-d);font-weight:700;font-size:21px;margin-bottom:6px;line-height:1.25;}
+.step-sub{color:var(--text-dim);font-size:13px;margin-bottom:18px;line-height:1.5;}
+
+/* search box for big lists */
+.search-box{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:10px 14px;margin-bottom:14px;}
+.search-box input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13px;}
+.search-box input::placeholder{color:var(--text-faint);}
+.search-box .ico{color:var(--text-faint);font-size:13px;}
+
+.body-scroll{flex:1;overflow-y:auto;padding-bottom:8px;}
+
+.chip-grid{display:flex;flex-wrap:wrap;gap:9px;}
+.chip{padding:10px 16px;border-radius:10px;background:var(--chip);border:1px solid var(--line);
+  font-size:13px;font-weight:500;color:var(--text-dim);white-space:nowrap;transition:all .16s ease;}
+.chip:hover{border-color:var(--pink-dim);color:var(--text);}
+.chip.active{background:var(--pink);border-color:var(--pink);color:#fff;font-weight:600;
+  box-shadow:0 6px 14px -8px rgba(255,46,126,.55);}
+
+.show-more{font-family:var(--font-m);font-size:11.5px;color:var(--text-dim);border:1px dashed var(--line);
+  padding:9px 15px;border-radius:10px;margin-top:2px;}
+.show-more:hover{color:var(--text);border-color:var(--pink-dim);}
+
+.no-results{color:var(--text-faint);font-size:12.5px;font-style:italic;padding:10px 2px;}
+
+.skip-note{font-family:var(--font-m);font-size:11px;color:var(--text-faint);margin-top:16px;}
+.skip-note button{color:var(--pink);text-decoration:underline;}
+
+/* nav bar */
+.nav-bar{position:sticky;bottom:0;background:linear-gradient(0deg, var(--bg) 60%, transparent);
+  padding-top:18px;margin-top:auto;display:flex;gap:10px;}
+.nav-btn{flex:1;padding:14px;border-radius:12px;text-align:center;font-weight:700;font-size:14px;transition:all .2s;}
+.nav-back{background:var(--surface-2);border:1px solid var(--line);color:var(--text-dim);flex:0 0 90px;}
+.nav-back:hover{color:var(--text);border-color:var(--text-dim);}
+.nav-next{background:linear-gradient(90deg, var(--pink), #B0389A);color:#fff;
+  box-shadow:0 12px 26px -14px rgba(255,46,126,.6);}
+.nav-next:hover{filter:brightness(1.08);}
+.nav-next .cnt{font-family:var(--font-m);font-weight:400;font-size:11px;opacity:.85;margin-left:4px;}
+
+/* review screen */
+.review-group{margin-bottom:16px;}
+.review-group h4{font-family:var(--font-m);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--pink);margin-bottom:8px;}
+.review-chips{display:flex;flex-wrap:wrap;gap:7px;}
+.review-chip{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:5px 11px;font-size:11.5px;color:var(--text-dim);}
+.jump-btn{font-family:var(--font-m);font-size:10px;color:var(--text-faint);margin-left:6px;}
+.jump-btn:hover{color:var(--pink);}
+
+.result-panel{margin-top:16px;background:#0D0C11;border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:none;}
+.result-panel.show{display:block;}
+.result-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.result-head h4{font-family:var(--font-m);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);}
+.copy-btn{font-family:var(--font-m);font-size:11px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);color:var(--text-dim);}
+.copy-btn:hover{color:var(--text);border-color:var(--pink);}
+.copy-btn.copied{color:var(--pink);border-color:var(--pink);}
+.result-text{font-family:var(--font-m);font-size:12.5px;line-height:1.75;color:#F3C9E0;white-space:pre-wrap;cursor:text;user-select:text;max-height:340px;overflow-y:auto;}
+
+.mode-grid{display:flex;flex-wrap:wrap;gap:10px;}
+.mode-chip{padding:14px 20px;border-radius:12px;background:var(--surface);border:1px solid var(--line);
+  font-size:14px;font-weight:600;color:var(--text-dim);transition:all .18s;}
+.mode-chip:hover{border-color:var(--pink-dim);}
+.mode-chip.active{background:var(--pink);border-color:var(--pink);color:#fff;box-shadow:0 6px 16px -8px rgba(255,46,126,.6);}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--surface-2);border:1px solid var(--line);padding:11px 18px;border-radius:10px;
+  font-size:12.5px;font-family:var(--font-m);opacity:0;pointer-events:none;transition:all .3s;z-index:60;
+  display:flex;align-items:center;gap:8px;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast .dot{width:6px;height:6px;border-radius:50%;background:var(--pink);box-shadow:0 0 6px var(--pink);}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topline">Heart Sync AI Creative Agency / Scene & Style Prompt Builder</div>
+
+  <div class="progress-label"><span id="stepLabel">Step 1 of 24</span><span id="stepPct">4%</span></div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:4%"></div></div>
+
+  <div class="body-scroll" id="stepBody"></div>
+
+  <div class="nav-bar">
+    <button class="nav-btn nav-back" id="backBtn" onclick="goBack()">← Back</button>
+    <button class="nav-btn nav-next" id="nextBtn" onclick="goNext()">Next <span class="cnt" id="nextCount"></span></button>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script>
+const MODES = ["Solo","Couple","Mommy & Me","Mini Me"];
+let activeMode = "Solo";
+
+const CATEGORIES = [
+  {title:"Everyday & Street Luxury", plus:false, items:["Chanel Street","Minimal Power","Parisian Boss"]},
+  {title:"Y2K & Baddie Fits", plus:false, items:["Pink Power Suit","Anime Street Style","Retro Phone Call","Patchwork Denim","Puffer Jacket Glam"]},
+  {title:"Luxury & Red-Carpet Couture", plus:false, items:["CEO Chic","Night Luxe","2011 Grammys","Met Gala Sculpture","Gold Street Luxe","Pinstripe Suit Dress","Pink Friday 2 Tour","Floral Ruffle Mini","Pastel Gown","Red Carpet White Lace","Metallic Floral Art","White Fur & Studs","Satin Dream","Pink Friday Art","Sleek Satin Gown","Neon Pink Haze","Anaconda Vibe","White Fur Cuffs"]},
+  {title:"Boss Babe Affirmations", plus:false, items:["Becoming That Woman","Building My Empire","Glow And Pray","I Choose Myself"]},
+  {title:"Lifestyle & Vibe", plus:false, items:["Pink G-Wagon Glam","Pink Rolls Royce","Black Lamborghini","White Ferrari","Matching G-Wagons","Baddie Athleisure","Maybach Money","Red Rose Photoshoot","Night Out"]},
+  {title:"Big Brand Hauls", plus:false, items:["Target Finds","Walmart Glam","Macy's Style","Nordstrom Luxe"]},
+  {title:"Shot Type & Storyboard", plus:false, items:["Headshot","Upper Body","Mid-Shot","Cowboy Shot","Full Body","Outfit Detail Shot","Accessory Close-Up","Hair & Makeup Close-Up","Shoe Cam"]},
+  {title:"Scene & Lighting", plus:true, items:["Marble Lobby","Boutique Elevator","Penthouse Hallway","City at Night","Studio Backdrop","Golden Hour Lighting","Chic Bakery","Holding a Wine Glass in a Lounge","Candid Laugh With Wine","Cheers-ing With Champagne"]},
+  {title:"Body Type", plus:true, items:["Curvy Body Shape","Voluptuous Figure","Slim Thick Body Type","Athletic Build"]},
+  {title:"Designer Aesthetics", plus:true, items:["Fendi","Gucci","Prada","Chanel","Dior","Balmain","Versace","Bottega","YSL","Hermès","Givenchy","Miu Miu","Off-White"]},
+  {title:"Materials & Motifs", plus:true, items:["Silk","Leather","Tweed","Sequins","Bouclé","Cashmere","Denim","Satin","Wool","Latex","Organza","Quilted","Houndstooth","Jacquard","Shearling","Faux Fur"]},
+  {title:"Editorial Finish", plus:true, items:["Cinematic Lighting","Shallow Depth of Field","Magazine-Quality Finish","Soft Glam Lighting","Filmic Contrast","High-End Color Grading"]},
+  {title:"Accessories", plus:true, items:["Oversized Sunglasses","Layered Gold Chains","Quilted Mini Bag","Crystal Belt","Pearl Necklace","Box Clutch","Futuristic Gold Shades","Holding a Vogue Magazine"]},
+  {title:"Jewelry", plus:true, items:["Large Gold Hoops","Diamond Stud Earrings","Layered Gold Chain Necklaces","Silver Cross Choker","Silver Bangle Bracelets","Diamond Tennis Necklace","Pearl Drop Earrings"]},
+  {title:"Skin Tone", plus:true, items:["Porcelain Skin","Beige Skin","Honey Skin","Caramel Skin","Mocha Skin","Espresso Skin","Ebony Skin"]},
+  {title:"Skin Undertone", plus:true, items:["Golden Undertone","Olive Undertone","Neutral Undertone","Cool Undertone","Red Undertone","Peach Undertone"]},
+  {title:"Skin Realism Features", plus:true, items:["Visible Pores","Peach Fuzz","Micro-Speculars","Ultra-Realistic Skin Texture","Dewy Skin Finish","Matte Skin Finish"]},
+  {title:"Makeup Look", plus:true, items:[
+    "Soft-glam neutral tones – dewy skin, nude lip gloss, peach blush","HD glam matte foundation – airbrushed contour, bright under-eye, shimmer lids","Full-face beat – baking technique, dramatic highlight, over-lined lips","No-makeup makeup – skin-tint base, natural lashes, clear gloss","Golden-hour glam – bronze eyes, gold highlight, warm undertones","Rosé flush – pink blush drape, glossy pink lips","Business-meeting beat – soft brown matte eyeshadow, nude matte lip, light contour","Corporate soft glam – mauve tones, precise liner, satin finish","Red-carpet radiance – champagne shimmer eyes, full glow, berry lips","Editorial metallic – chrome lids, glass-skin foundation","Cat-eye classic – winged liner, baby-doll lashes, pink-nude lip","90s supermodel – brown lip liner, nude gloss, bronzed cheek","Barbiecore pink – cotton-candy blush, pink shimmer lids","Snow-glow – icy highlight, frosted lip gloss","Bronze goddess – warm contour, gold foil shadow","Strawberry milk – dewy pink tones, flushed nose","Latte makeup – caramel tones, glossy brown lip","Cinnamon spice – burnt-orange shimmer lids","Soft beat for work – tinted moisturizer, light mascara","Clean-girl glow – soap brows, cream blush, lip balm sheen",
+    "Matte beat – powder set, sculpted cheekbones","Dewy glass-skin – hydrated base, balm highlight","Wedding-day glam – subtle shimmer, nude liner, natural lash","Holiday glam – gold glitter lids, red lip","Christmas couture – ruby shimmer, pearlescent highlight","Angelic glow – silver shimmer lids, soft coral lips","Vintage pin-up – matte red lip, black wing liner","Soft-brown glam – taupe shadow, glossy lip","Peach sorbet – pastel eyeshadow, coral lip","Mauve moment – cool-tone blush, glossy mauve lips","Smoked-out glam – charcoal shadow, glossy nude lip","Reverse cat eye – smoke under lash line","Bold editorial color pop – electric blue liner, gloss skin","Copper glam – metallic copper lids, brown-nude lip","Champagne glow – highlight-heavy, pink gloss","Glow-from-within – luminous base, minimal powder","Bronze-foil – high-shine lid, gold inner-corner","Candlelight glam – warm lowlight, golden finish","Blushing bride – rose-tone lid, glossy peach lip","Date-night beat – smoky brown eyes, glossy pout",
+    "Chocolate glam – rich brown shadows, cocoa gloss","Natural nude – skin-matching blush, balm lip","Matte bronze – flat warm tones, velvet finish","Metallic rose – rose-gold lids, pink gloss","Autumn leaf – orange-brown shimmer blend","Pumpkin spice glam – rust lid, burnt lip","Mocha glam – espresso liner, glossy mocha lip","Glossy-eye editorial – wet look shadow","Rainbow glam – multi-color liner","Graphic liner art – white wing, nude lip","Sunset glam – orange, gold, pink gradient","Glitter bomb – chunky gold glitter","Neon pop – hot-pink or lime lid","Galaxy glam – iridescent pigments","Mermaid glow – aqua shimmer","Ice-princess glam – frosted silver tones","Summer glow – bronze body highlight","Beach babe – minimal, salty sheen","Vacation soft beat – tinted moisturizer","Club-night full glam – dramatic contour",
+    "Festival glitter glam","Birthday beat – extra highlight","Baddie glam – matte full coverage","Instagram-filter look","Soft-focus HD beat","Bridal luxury glow","Boss-babe glam","Red-lip classic","Nude lip obsession","Cut-crease glam","Halo-eye shimmer","Smoky purple eye","Emerald green metallic","Sapphire blue smoke","Peach-nude perfection","Glass-skin runway","Highlight bomb","Subtle bronze","Pink-champagne glam","Lilac glow",
+    "Rose-gold flush","Coral bliss","Apricot shine","Honey-drip glam","Caramel latte look","Chestnut beat","Maple-tone fall makeup","Cocoa-butter finish","Creamy ivory glow","Toffee glam","Golden-chestnut beat","Matte honey finish","Dewy rose skin","Cinnamon-swirl glam","Champagne-to-bronze blend","HD studio beat","Camera-ready matte","Soft contour sculpt","Bold cheek blush drape","Barbie holiday glam",
+    "Winter wonderland look","Snow-kissed glam","Red-velvet Christmas look","Candy-cane liner detail","Gold-leaf holiday beat","Frosted cranberry glow","Evergreen eye makeup","Santa-baby red lip","G-Wagon glam (boss energy, HD beat)","Business-luxe soft glam","Glam for Zoom calls","Photoshoot-ready beat","Glam under LED light","Golden-studio beat","Red-carpet HD finish","Magazine-cover look","Makeup-for-men neutral","No-flashback matte","Long-wear bride glow","Editorial drama cut-crease",
+    "Couture runway beat","Winter holiday party glam","Bronze-holiday look","Gift-wrapped glam","Frosty-finish glow","Ice-queen eye","Nude-pink office look","Champagne-holiday finish","Gold-star night glam","Christmas-Eve soft beat","Holiday family glow","Christmas-morning natural","Sleigh-ride sparkle","Reindeer-brown smoke","Evergreen-liner look","Polar-bear pearl finish","Candy-cane lashes edit","North-pole highlight","New-Year's Eve silver glam","Countdown gold beat",
+    "Fireworks sparkle look","12 AM glow","Confetti shimmer eye","Champagne-toast highlight","Glitter-lip moment","Resolution-ready beat","Winter soft-glow beat","January-renewal look","Frost-kissed nude","Cozy-indoor beat"
+  ]},
+  {title:"Detailed Lash Styles", plus:true, items:[
+    "Natural mink lashes – short, wispy ends","16 mm baby-doll lashes","18 mm flutter set","20 mm soft-volume","22 mm glam curl","25 mm baddie lash","27 mm super drama","Double-stacked mink","Hybrid classic-volume mix","Cat-eye mapping","Doll-eye mapping","Fox-eye style","Wispy clusters","Fluffy Russian volume","Mega-volume fans","Light-volume sets","Wet-lash look","Kim K spiked style","Soft-classic C-curl","D-curl volume set",
+    "L-curl lifted outer corner","Round-eye design","Natural open eye","Glamorous tapered set","Feather light lash","Bottom-lash enhancement","Lower-lash clusters","Ultra-curl set","3D mink lashes","5D mink lashes","Faux mink vegan set","Magnetic lash pair","Strip lash matte band","Clear-band wispy","Black-band glam lash","Corner-accent lashes","Half-lash look","Custom lash mapping","Colored lash tips","Ombre pink lashes",
+    "Blue lash ends","Glitter accent lashes","Rhinestone lash line","Winged lash effect","Spiky outer corner","Mixed length volume","Lash-lift look","Mascara-coated effect","Classic single extensions","Hybrid half set","Dense full set","Flared outer corner","Catwalk lash look","Editorial lash art","Festival lashes","Metallic lash finish","Gold-tipped lashes","Silver-foil lashes","Glitter-dust lashes","Red-holiday lashes",
+    "Green holiday tips","Snow-white lashes","Candy-cane pattern","Winter glam lashes","Frosted tips set","Sleigh-ride lashes","North-star spike set","Cranberry tint lashes","Icy-blue ends","Champagne lash shine","Velvet black luxury set","Matte jet black set","Glossy finish lash","Volume hybrid cat-eye","Classic C curl medium length","Hybrid mix DD curl","Dramatic baddie fan","Wispy natural fan","HD lash extensions","Soft-glam set",
+    "Full-beat lash stack","Business-glam lashes","Everyday neutral lash","Editorial length set","Bridal natural set","Date-night fluff","Camera-ready lash","Red-carpet volume","Couture lash fan","Studio HD curl","Soft beat short lash","Holiday tinsel lash","Sparkle lash strip","Diamond lash band","Mink XL set","3D Curl Fusion set","Black velvet lash","Butter-soft mink fans","Super-fine classic set","Wispy baby lashes"
+  ]},
+  {title:"Hair Style", plus:true, items:["Silk Press","Hollywood Waves","Sleek High Bun","Long Braided Ponytail","High Ponytail","Sleek Bob","Wavy Bob With Bangs","Half-Up Half-Down","4C Coils","Jet Black Gloss"]},
+  {title:"Detailed Hair Styles", plus:true, items:[
+    "Long Waist-Length Brazilian Body Wave With Side Part","40-Inch Burmese Straight Hair With HD Lace Closure","Indian Deep Wave With Middle Part And Glossy Sheen","Honey Blonde Balayage With Bouncy Curls","Jet Black Silky Press With Baby Hairs","Platinum Blonde Bob, Asymmetrical Cut","Burgundy Ombré 28-Inch Wavy Layers","Burmese Curly 30-Inch Frontal Install","Soft Brown Chestnut Highlights, Natural Curls","Kinky Straight 4C-Textured Ponytail","Sleek Low Bun With Side Swoop","Deep Wave Lace Front Wig, 13x4 Frontal",
+    "Half-Up, Half-Down Barrel Curls, HD Transparent Lace","Waist-Length Bone Straight Jet Black, 5x5 Closure","Cinnamon Copper Loose Curls","High Braided Ponytail With Gold String Accents","613 Platinum Frontal With Melted Roots","Burmese Deep Curly With 200% Density","Brazilian Water Wave 30-Inch Install","Beach Wave 26-Inch Soft Glam Look","Wavy Layered Bob With Curtain Bangs","Short Pixie Cut With Finger Waves","Voluminous Afro Puff With Slick Edges","Faux Locs With Golden Cuffs","Goddess Braids With Curly Ends",
+    "Shoulder-Length Curly Crochet Style","Full Kinky Curly Afro","Bantu Knots With Coily Pattern","Burgundy Passion Twists","Half-Up Bun With Loose Curls Down Back","Long Side Braid With Baby Hairs","Burmese Curly Bob","Brazilian Loose Wave Ponytail","Burmese Wet & Wavy Frontal Install","Half-Up Space Buns With Tendrils","30-Inch Sleek Ponytail","Low Bun With Pearl Accessories","Long Crimped Hair With Glossy Finish","Sleek Straight Hair With Two Face-Framing Strands","Black-To-Red Ombré",
+    "Deep Curly Middle-Part Unit","Blonde Highlight Streaks In Dark Brown Base","Burmese Kinky Curly Texture","Natural Blowout Volume Style","Long Layered Cut With Swoop Bangs","Burmese Wavy Wig, Wet Look Finish","Soft Glam Side Ponytail","Burgundy Bob With Fringe","Chocolate Brown Layered Hair","Brazilian Straight With Blunt Cut Ends","Burmese Loose Deep Curls","Auburn Highlights With Soft Curls","Red Wine-Colored Curls","Long Wavy Ponytail With Baby Hairs","Boho Goddess Locs",
+    "Honey Blonde Frontal With HD Melt","Jet Black Half-Up Bun","Natural Afro With Headband","Burmese Wet Wave","Long Kinky Straight With Texture","Sleek Low Braid Bun","Indian Remy Silky Press","Curly Side Part With Volume","Burmese Tight Curls","Deep Wave Middle Part","Burmese Straight Closure Unit","Ombre Brown To Blonde Loose Waves","Layered Frontal With Soft Curls","Copper Red Blowout","Sleek Bob With Middle Part",
+    "Burmese Full Wave Unit","High Puff Afro","28-Inch Straight Weave Install","Burmese Full Deep Curly Frontal","Indian Wavy Lace Front","Platinum Blonde Long Curls","Black Silky 30-Inch Ponytail","Natural Curls With Baby Hairs","Curly Half Ponytail","Auburn Bob With Side Part","Deep Curly 13x6 Frontal","Brazilian Straight 40-Inch Unit","Loose Wave With Highlights","Burmese Full Wavy Look","High Bun With Accessories","Curly Bangs Bob",
+    "Burmese Straight Blunt Cut","Deep Wave Wig With 180% Density","Red Ombré Beach Curls","Burmese Natural Wave","Kinky Straight Ponytail","Indian Curly Layered Look","Wet Wave Deep Curls","Blonde Layered Waves","Chocolate Bob Cut","Natural Afro Curls","Short Curly Pixie Cut","Burmese Bouncy Curls","30-Inch Straight Press","Burmese Frontal Wavy Install","Long Side Swoop Ponytail","Crimped Long Waves","Layered Frontal Unit",
+    "Burmese Loose Curls","Jet Black Body Wave","Soft Brown Straight Unit","Platinum Straight Wig","Burmese Middle Part Curls","Deep Curly Side Part","Auburn Layered Waves","Long Burmese Wavy Install","Loose Curls With Baby Hairs","Side Bun Updo","Deep Wave Ponytail","Long Braided Crown","Burmese Crimped Waves","Kinky Twist Bob","Shoulder-Length Natural Curls",
+    "Burmese Full Volume Curls","Sleek Double Braids","Platinum Waves","Copper Curly Bob","Burmese Layered Curls","Jet Black Natural Press","Bohemian Twist Braids","Loose Curls Updo","Burmese High Ponytail","613 Blonde Soft Waves","Burmese Wet Wave Long","Low Curly Bun","Layered Blowout Style","Burmese Soft Curls","Deep Curl Ponytail","Sleek Black Lob","Wet Look Deep Curls","Burmese Soft Press","40-Inch Silky Straight Hair","Soft Brown Balayage Curls","Burmese Beach Wave Curls",
+    "Auburn Natural Blowout","Long Twist-Out","Burmese Wavy Lace Front","Straight Bob With Bangs","Honey Brown Waves","Burmese Silky Wave Install","Deep Curly High Ponytail"
+  ]},
+  {title:"Baddie & Classy Hairstyles", plus:false, items:["Classy Baddie Blowout","Sleek Braided Updo","High Half-Up Waves","Boho Braids","Edged & Braided","Fluffy 90s Updo"]},
+];
+
+// selections: for CATEGORIES, key = "CategoryTitle::Item" -> true
+const selected = {};
+let mode = null;
+
+// Steps: 0 = mode picker, 1..N = one per category, N+1 = review/generate
+const TOTAL_STEPS = CATEGORIES.length + 2;
+let step = 0;
+const QUICK_PICK_COUNT = 12;
+const expandedCats = {}; // categoryIndex -> true once "show all" clicked
+const searchTerms = {}; // categoryIndex -> current search string
+
+function key(cat, item){ return cat + "::" + item; }
+
+function catIndexForStep(s){ return s - 1; } // step 1 => CATEGORIES[0]
+
+function render(){
+  updateProgress();
+  document.getElementById("backBtn").style.visibility = step === 0 ? "hidden" : "visible";
+  const body = document.getElementById("stepBody");
+
+  if(step === 0){
+    renderModeStep(body);
+  } else if(step <= CATEGORIES.length){
+    renderCategoryStep(body, CATEGORIES[catIndexForStep(step)], catIndexForStep(step));
+  } else {
+    renderReviewStep(body);
+  }
+}
+
+function updateProgress(){
+  const pct = Math.round((step / (TOTAL_STEPS - 1)) * 100);
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("stepPct").textContent = pct + "%";
+  document.getElementById("stepLabel").textContent = step === TOTAL_STEPS - 1
+    ? "Review & generate"
+    : `Step ${step + 1} of ${TOTAL_STEPS}`;
+}
+
+function renderModeStep(body){
+  body.innerHTML = `
+    <div class="step-eyebrow">Getting started</div>
+    <div class="step-title">Who's in the shot?</div>
+    <div class="step-sub">This sets the mode for the whole scene before we get into styling details.</div>
+    <div class="mode-grid" id="modeGrid"></div>
+  `;
+  const grid = document.getElementById("modeGrid");
+  MODES.forEach(m => {
+    const b = document.createElement("button");
+    b.className = "mode-chip" + (m === mode ? " active" : "");
+    b.textContent = m;
+    b.onclick = () => { mode = m; render(); };
+    grid.appendChild(b);
+  });
+  document.getElementById("nextCount").textContent = "";
+}
+
+function renderCategoryStep(body, cat, ci){
+  const count = cat.items.filter(i => selected[key(cat.title,i)]).length;
+  const isBig = cat.items.length > QUICK_PICK_COUNT;
+  const term = (searchTerms[ci] || "").toLowerCase();
+
+  let pool = cat.items;
+  if(isBig && term){
+    pool = cat.items.filter(i => i.toLowerCase().includes(term));
+  } else if(isBig && !expandedCats[ci]){
+    // show quick picks: selected items first, then fill up to QUICK_PICK_COUNT
+    const picked = cat.items.filter(i => selected[key(cat.title,i)]);
+    const rest = cat.items.filter(i => !selected[key(cat.title,i)]);
+    pool = picked.concat(rest).slice(0, Math.max(QUICK_PICK_COUNT, picked.length));
+  }
+
+  body.innerHTML = `
+    <div class="step-eyebrow">${cat.title}</div>
+    <div class="step-title">${questionFor(cat.title)}</div>
+    <div class="step-sub">Tap any that fit — you can pick more than one, or skip entirely.</div>
+    ${isBig ? `<div class="search-box"><span class="ico">⌕</span><input type="text" id="searchInput" placeholder="Search ${cat.items.length} options..." value="${term.replace(/"/g,'')}"></div>` : ''}
+    <div class="chip-grid" id="chipGrid"></div>
+    ${isBig && !term ? `<button class="show-more" id="showMoreBtn" style="margin-top:12px;">${expandedCats[ci] ? '− Show fewer' : `+ Show all ${cat.items.length}`}</button>` : ''}
+    <div class="skip-note">${count ? '' : `Nothing picked yet — that's fine, <button onclick="goNext()">skip this one</button>.`}</div>
+  `;
+
+  const grid = document.getElementById("chipGrid");
+  if(pool.length === 0){
+    grid.innerHTML = `<div class="no-results">No matches for "${term}"</div>`;
+  } else {
+    pool.forEach(i => {
+      const b = document.createElement("button");
+      const active = !!selected[key(cat.title,i)];
+      b.className = "chip" + (active ? " active" : "");
+      b.textContent = (cat.plus ? "+ " : "") + i;
+      b.onclick = () => {
+        selected[key(cat.title,i)] = !selected[key(cat.title,i)];
+        render();
+      };
+      grid.appendChild(b);
+    });
+  }
+
+  if(isBig){
+    const input = document.getElementById("searchInput");
+    if(input){
+      input.oninput = (e) => { searchTerms[ci] = e.target.value; render(); document.getElementById("searchInput").focus(); document.getElementById("searchInput").setSelectionRange(searchTerms[ci].length, searchTerms[ci].length); };
+    }
+    const moreBtn = document.getElementById("showMoreBtn");
+    if(moreBtn) moreBtn.onclick = () => { expandedCats[ci] = !expandedCats[ci]; render(); };
+  }
+
+  document.getElementById("nextCount").textContent = count ? `(${count} picked)` : "";
+}
+
+// friendlier phrasing per category, falls back to a generic question
+const QUESTION_MAP = {
+  "Everyday & Street Luxury": "Any everyday street-luxury looks?",
+  "Y2K & Baddie Fits": "Feeling any Y2K or baddie fits?",
+  "Luxury & Red-Carpet Couture": "Want any red-carpet couture moments?",
+  "Boss Babe Affirmations": "Add a boss-babe affirmation overlay?",
+  "Lifestyle & Vibe": "What lifestyle flexes fit the scene?",
+  "Big Brand Hauls": "Any brand-haul references?",
+  "Shot Type & Storyboard": "What shot type works here?",
+  "Scene & Lighting": "Where's this scene set?",
+  "Body Type": "Any body type notes for this render?",
+  "Designer Aesthetics": "Channeling any designer houses?",
+  "Materials & Motifs": "Any fabrics or materials to call out?",
+  "Editorial Finish": "What finish should the shot have?",
+  "Accessories": "Any accessories to add?",
+  "Jewelry": "Any jewelry pieces?",
+  "Skin Tone": "What skin tone?",
+  "Skin Undertone": "Any specific undertone?",
+  "Skin Realism Features": "Want any realism texture details?",
+  "Makeup Look": "What makeup look?",
+  "Detailed Lash Styles": "Any specific lash style?",
+  "Hair Style": "Quick-pick a hair style?",
+  "Detailed Hair Styles": "Want a more specific hair style?",
+  "Baddie & Classy Hairstyles": "Any baddie or classy hairstyle finishes?",
+};
+function questionFor(title){ return QUESTION_MAP[title] || `Anything from ${title}?`; }
+
+function renderReviewStep(body){
+  let html = `
+    <div class="step-eyebrow">Almost there</div>
+    <div class="step-title">Review your picks</div>
+    <div class="step-sub">Mode: <b style="color:var(--text)">${mode || '—'}</b></div>
+  `;
+  CATEGORIES.forEach((cat, ci) => {
+    const picks = cat.items.filter(i => selected[key(cat.title,i)]);
+    if(picks.length){
+      html += `<div class="review-group">
+        <h4>${cat.title} <button class="jump-btn" onclick="jumpTo(${ci+1})">edit</button></h4>
+        <div class="review-chips">${picks.map(p=>`<span class="review-chip">${p}</span>`).join('')}</div>
+      </div>`;
+    }
+  });
+  const anyPicks = Object.values(selected).some(Boolean);
+  if(!anyPicks){
+    html += `<div class="skip-note" style="margin-top:0;">Nothing selected yet — go back and tap a few chips, or generate anyway for a blank template.</div>`;
+  }
+  html += `
+    <button class="nav-btn nav-next" style="width:100%;margin-top:10px;" onclick="generatePrompt()">✨ Generate Prompt</button>
+    <div class="result-panel" id="resultPanel">
+      <div class="result-head"><h4>Assembled prompt</h4><button class="copy-btn" id="copyBtn" onclick="copyResult()">Copy</button></div>
+      <div class="result-text" id="resultText" onclick="selectResultText()"></div>
+    </div>
+  `;
+  body.innerHTML = html;
+  document.getElementById("nextBtn").style.visibility = "hidden";
+}
+
+function jumpTo(s){ step = s; document.getElementById("nextBtn").style.visibility = "visible"; render(); }
+
+function goNext(){
+  if(step < TOTAL_STEPS - 1){ step++; render(); }
+}
+function goBack(){
+  if(step > 0){ step--; document.getElementById("nextBtn").style.visibility = "visible"; render(); }
+}
+
+function generatePrompt(){
+  let lines = [`MODE: ${mode || '[not selected]'}`, ""];
+  CATEGORIES.forEach(cat => {
+    const picks = cat.items.filter(i => selected[key(cat.title, i)]);
+    if(picks.length) lines.push(`${cat.title}: ${picks.join(", ")}`);
+  });
+  if(lines.length === 2) lines.push("[No selections made — tap chips in each step to build the scene]");
+  lines.push("", "Note: apply on top of this character's locked CORE DNA (face, eyes, body) — styling and scene only.");
+  document.getElementById("resultText").textContent = lines.join("\n");
+  document.getElementById("resultPanel").classList.add("show");
+  showToast("Prompt generated");
+}
+
+/* ---------- clipboard (with fallback) ---------- */
+function copyToClipboard(text){
+  return new Promise((resolve, reject) => {
+    if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(resolve).catch(() => fallbackCopy(text) ? resolve() : reject());
+    } else {
+      fallbackCopy(text) ? resolve() : reject();
+    }
+  });
+}
+function fallbackCopy(text){
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed"; ta.style.top = "-9999px"; ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+function selectResultText(){
+  const el = document.getElementById("resultText");
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+function copyResult(){
+  const text = document.getElementById("resultText").textContent;
+  const btn = document.getElementById("copyBtn");
+  copyToClipboard(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = "✓ Copied";
+    btn.classList.add("copied");
+    setTimeout(()=>{ btn.textContent = orig; btn.classList.remove("copied"); }, 1600);
+    showToast("Copied to clipboard");
+  }).catch(() => {
+    selectResultText();
+    showToast("Auto-copy blocked here — text is selected, press Ctrl/Cmd+C");
+  });
+}
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 2400);
+}
+
+render();
+</script>
+</body>
+</html>
